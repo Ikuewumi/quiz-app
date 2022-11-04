@@ -1,0 +1,46 @@
+{
+   "name": "server",
+   "version": "1.0.0",
+   "description": "",
+   "main": "index.js",
+   "scripts": {
+      "dev": "nodemon src/index.ts",
+      "build": "tsc -p .",
+      "test": "vitest --ui"
+   },
+   "keywords": [
+      "server",
+      "expressjs",
+      "nodejs",
+      "backend",
+      "api"
+   ],
+   "author": {
+      "name": "Ayobami Ikuewumi",
+      "email": "ayobamsik@gmail.com"
+   },
+   "dependencies": {
+      "bcrypt": "^5.1.0",
+      "config": "^3.3.8",
+      "express": "^4.18.2",
+      "jsonwebtoken": "^8.5.1",
+      "mongoose": "../packages/node_modules/mongoose",
+      "shortid": "^2.2.16"
+   },
+   "devDependencies": {
+      "@types/bcrypt": "^5.0.0",
+      "@types/express": "^4.17.14",
+      "@types/jsonwebtoken": "^8.5.9",
+      "@types/node": "^18.11.5",
+      "@vitest/coverage-c8": "../packages/node_modules/@vitest/coverage-c8",
+      "@vitest/ui": "../packages/node_modules/@vitest/ui",
+      "dotenv": "^16.0.3",
+      "helpers": "../packages/helpers",
+      "types": "../packages/types",
+      "nodemon": "^2.0.20",
+      "ts-node": "^10.9.1",
+      "typescript": "../packages/node_modules/typescript",
+      "vite": "../packages/node_modules/vite",
+      "vitest": "../packages/node_modules/vitest"
+   }
+}
