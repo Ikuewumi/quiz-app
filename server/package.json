@@ -6,7 +6,7 @@
    "scripts": {
       "dev": "nodemon src/index.ts",
       "build": "tsc -p .",
-      "test": "vitest --ui"
+      "test": "vitest --ui --coverage"
    },
    "keywords": [
       "server",
