@@ -6,16 +6,11 @@
    "scripts": {
       "ins:dev": "pnpm install --offline",
       "ins:prod": "pnpm install",
-      "dev:server": "npm run dev --prefix server",
-      "dev:client": "npm run dev --prefix client",
-      "build:server": "npm run build --prefix server",
-      "build:client": "npm run build --prefix client",
-      "test:server": "npm run test --prefix server",
-      "test:client": "npm run test --prefix client",
-      "build": "pnpm run build:client && pnpm run build:server",
-      "test": "pnpm run test:server && pnpm run test:client",
-      "dev": "pnpm run dev:server & pnpm run dev:client",
-      "start": "node server/dist/index.js"
+      "start": "node server/dist/index.js",
+      "test": "turbo run test",
+      "dev": "turbo run dev",
+      "build": "turbo run build",
+      "watch": "turbo run watch"
    },
    "keywords": [
       "fullstack",
@@ -30,5 +25,14 @@
       "type": "git",
       "url": "https://github.com/Ikuewumi/quiz-app.git"
    },
-   "license": "MIT"
+   "license": "MIT",
+   "workspaces": [
+      "packages/**",
+      "client/*",
+      "server/*",
+      "./*"
+   ],
+   "devDependencies": {
+      "turbo": "^1.6.3"
+   }
 }

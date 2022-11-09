@@ -1,0 +1,38 @@
+GET http://localhost:5000/test
+
+###
+
+POST http://localhost:5000/api/auth/signup
+Content-Type: application/json
+
+{
+   "email": "ayobamsik@gmail.com",
+   "password": "Linode.man",
+   "name": "Tim Urban"
+}
+
+###
+
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+   "email": "ayobamsik@gmail.com",
+   "password": "Linode.man"
+}
+
+###
+
+GET http://localhost:5000/protected
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF5b2JhbXNpa0BnbWFpbC5jb20iLCJpZCI6IjYzNmJmM2MyYWI0NmVmZGIyNzI5MWVmNyIsImlhdCI6MTY2ODAyMDQ2NywiZXhwIjoxNjY4MDIxMzY3fQ.Wq0VgQR3bcWYt8nL7zHHe_VCf1rKchvtMDwW62M01TQ
+Content-Type: application/json
+
+
+###
+
+POST http://localhost:5000/api/auth/authorize
+Content-Type: application/json
+
+{
+   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF5b2JhbXNpa0BnbWFpbC5jb20iLCJpZCI6IjYzNmJmM2MyYWI0NmVmZGIyNzI5MWVmNyIsImlhdCI6MTY2ODAyMDY0MX0.aqwDwhaTo5A79e_u1PxtquhzyWYtnVqiBbtt1dRbzP0"
+}

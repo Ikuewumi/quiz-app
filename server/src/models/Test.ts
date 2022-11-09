@@ -1,9 +1,7 @@
 import { model, Schema } from "mongoose";
-interface TestInterface {
-   name: string
-}
+import { DocumentTypes } from "types"
 
-const schema = new Schema<TestInterface>({
+const schema = new Schema<DocumentTypes.Test>({
    name: String
 })
 schema.set('timestamps', true)

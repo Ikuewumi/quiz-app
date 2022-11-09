@@ -1,7 +1,7 @@
 import { model, Schema } from "mongoose";
-import { User } from "types";
+import { DocumentTypes } from "types";
 
-const schema = new Schema<User>({
+const schema = new Schema<DocumentTypes.User>({
    name: String,
    email: String,
    password: String,

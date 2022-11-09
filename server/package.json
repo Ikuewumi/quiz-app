@@ -2,10 +2,11 @@
    "name": "server",
    "version": "1.0.0",
    "description": "",
-   "main": "index.js",
+   "main": "src/app.js",
+   "exports": "dist/app.js",
    "scripts": {
-      "dev": "nodemon src/index.ts",
       "build": "tsc -p .",
+      "dev": "nodemon src/app.ts",
       "test": "vitest --ui --coverage"
    },
    "keywords": [
@@ -20,12 +21,14 @@
       "email": "ayobamsik@gmail.com"
    },
    "dependencies": {
+      "@types/config": "^3.3.0",
       "bcrypt": "^5.1.0",
       "config": "^3.3.8",
       "express": "^4.18.2",
       "jsonwebtoken": "^8.5.1",
       "mongoose": "../packages/node_modules/mongoose",
-      "shortid": "^2.2.16"
+      "shortid": "^2.2.16",
+      "vite-node": "^0.25.1"
    },
    "devDependencies": {
       "@types/bcrypt": "^5.0.0",
@@ -36,9 +39,10 @@
       "@vitest/ui": "../packages/node_modules/@vitest/ui",
       "dotenv": "^16.0.3",
       "helpers": "../packages/helpers",
-      "types": "../packages/types",
       "nodemon": "^2.0.20",
       "ts-node": "^10.9.1",
+      "tsc-watch": "^5.0.3",
+      "types": "../packages/types",
       "typescript": "../packages/node_modules/typescript",
       "vite": "../packages/node_modules/vite",
       "vitest": "../packages/node_modules/vitest"

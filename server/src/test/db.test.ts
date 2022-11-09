@@ -1,38 +1,9 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { connect, Model } from "mongoose"
-import UserModel from "../models/User.js"
-import TestModel from "../models/Test.js"
+import UserModel from "../models/User"
+import TestModel from "../models/Test"
 import { DocumentTypes } from "types"
-
-type DbModelsObject = {
-   [index: string]: Model<any>
-}
-
-class DbLibrary {
-
-   constructor(
-      readonly url: string,
-      private props: DbModelsObject
-   ) { }
-
-   async connectToDb() {
-      return connect(this.url)
-   }
-
-   getProp<T>(key: string): Model<T> {
-      const isPresent = key in this.props
-      if (!isPresent) throw Error('this db was not registered')
-      return this.props[key]
-   }
-
-
-
-}
-
-export const DbClass = new DbLibrary(process.env.DB_URI!, {
-   user: UserModel,
-   test: TestModel
-})
+import { DbClass } from "../config/db"
 
 
 describe('Starting db...', () => {
@@ -94,7 +65,7 @@ describe('CRUDing the database', () => {
    afterAll(async () => {
       const allTests = await TestCollection.find({})
       console.log(allTests)
-      // await TestCollection.deleteMany({})
+      await TestCollection.deleteMany({})
    })
 
 
