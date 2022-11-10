@@ -1,11 +1,14 @@
 {
    "extends": "@tsconfig/node16/tsconfig.json",
    "compilerOptions": {
-      "outDir": "./dist"
+      "outDir": "./lib",
+      "rootDir": "./src"
    },
    "include": [
       "src/*",
-      "src/**/*",
+      "src/**/*"
+   ],
+   "exclude": [
       "vitest.config.*",
       "vite.config.*"
    ]

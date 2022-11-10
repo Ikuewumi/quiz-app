@@ -24,6 +24,9 @@
       "markdown-it": "^13.0.1",
       "mongoose": "*",
       "node-html-markdown": "^1.2.2",
+      "nodemon": "^2.0.20",
+      "ts-node": "^10.9.1",
+      "tsc-watch": "^5.0.3",
       "vite": "^3.1.0"
    }
 }

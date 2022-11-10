@@ -1,0 +1,38 @@
+{
+   "name": "md",
+   "version": "1.0.0",
+   "description": "A subpackage to interconvert md",
+   "main": "lib/app.js",
+   "exports": "lib/app.js",
+   "scripts": {
+      "test": "vitest --ui --coverage",
+      "build": "tsc -p ."
+   },
+   "keywords": [],
+   "dependencies": {
+      "@types/dompurify": "^2.3.4",
+      "@types/jsdom": "^20.0.0",
+      "@types/marked": "^4.0.7",
+      "@vitest/coverage-c8": "../node_modules/@vitest/coverage-c8",
+      "@vitest/ui": "../node_modules/@vitest/ui",
+      "dompurify": "^2.4.0",
+      "jsdom": "^20.0.1",
+      "marked": "^4.1.1",
+      "node-html-markdown": "^1.2.2",
+      "vitest": "../node_modules/vitest"
+   },
+   "devDependencies": {
+      "@tsconfig/node16": "../node_modules/@tsconfig/node16",
+      "@types/node": "../node_modules/@types/node",
+      "nodemon": "../node_modules/nodemon",
+      "ts-node": "../node_modules/ts-node",
+      "tsc-watch": "../node_modules/tsc-watch",
+      "typescript": "../node_modules/typescript",
+      "vite": "../node_modules/vite"
+   },
+   "author": {
+      "name": "Ayobami Ikuewumi",
+      "email": "ayobamsik@gmail.com"
+   },
+   "license": "MIT"
+}
