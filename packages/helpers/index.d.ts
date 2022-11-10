@@ -1,1 +1,1 @@
-export declare const sleep: (ms?: number) => any;
+export declare const sleep: (ms?: number) => Promise<unknown>;

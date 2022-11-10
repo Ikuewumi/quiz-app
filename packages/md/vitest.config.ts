@@ -12,6 +12,7 @@ export default defineConfig({
          <h3>Mangyeko Sharingan</h3>
          <p>new world of an old man</p>
          `
-      }
+      },
+      "include": ["src/*", "src/*/**"]
    }
 })
