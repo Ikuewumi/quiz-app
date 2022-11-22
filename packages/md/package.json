@@ -2,11 +2,18 @@
    "name": "md",
    "version": "1.0.0",
    "description": "A subpackage to interconvert md",
+   "type": "module",
    "main": "lib/app.js",
-   "exports": "lib/app.js",
+   "module": "lib/app.js",
+   "exports": {
+      ".": {
+         "types": "./lib/app.d.ts",
+         "default": "./lib/app.js"
+      }
+   },
    "scripts": {
       "test": "vitest --ui --coverage",
-      "build": "tsc -p ."
+      "build": "tsc -d -p ."
    },
    "keywords": [],
    "dependencies": {

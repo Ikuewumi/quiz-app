@@ -5,17 +5,22 @@ export default defineStore(
    {
       state: () => {
          return {
-            isAuthenticated: true
+            isAuthenticated: true,
+            shouldShowHeader: false
          }
       },
 
       getters: {
-         modeAuth: (state) => state.isAuthenticated
+         modeAuth: (state) => state.isAuthenticated,
+         modeHeader: (state) => state.shouldShowHeader
       },
 
       actions: {
          on() { this.$state.isAuthenticated = true },
-         off() { this.$state.isAuthenticated = false }
+         off() { this.$state.isAuthenticated = false },
+
+         showHeader() { this.$state.shouldShowHeader = true },
+         hideHeader() { this.$state.shouldShowHeader = false },
       }
    }
 )
