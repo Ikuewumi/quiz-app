@@ -1,4 +1,4 @@
-import { AuthTypes } from "types"
+import { AuthTypes, QuizTypes } from "types"
 
 /**  Global dummy user variables */
 export const d: AuthTypes.SignInUser = {
@@ -6,3 +6,10 @@ export const d: AuthTypes.SignInUser = {
    email: 'a@b.c',
    password: '1234567'
 }
+
+/**A client question */
+export const cq: QuizTypes.ClientQuestion[] = [{
+   q: "new question",
+   options: ["art", "position", "isnane", "correct"]
+}]
+

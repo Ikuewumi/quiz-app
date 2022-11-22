@@ -6,12 +6,12 @@ import { fileURLToPath, URL } from 'url'
 export default defineConfig({
    plugins: [
       vue({
-         reactivityTransform: true
+         reactivityTransform: true,
       })
    ],
    resolve: {
       alias: {
          '@': fileURLToPath(new URL('./src', import.meta.url))
-      }
-   }
+      },
+   },
 })

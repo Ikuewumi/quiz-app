@@ -1,5 +1,5 @@
 <template>
-   <header data-c-header class="pbl-4 f-long even-cols">
+   <header data-c-header class="pbl-4 f-long even-cols sgrid">
       <div class="dis-flex j-between">
 
          <strong class="f-long">quizz</strong>
@@ -26,14 +26,13 @@
 </template>
 
 <script setup lang="ts">
-import logo from "@/assets/questions.svg"
 </script>
 
 <style lang="scss">
 header[data-c-header] {
    width: 100%;
-   display: flex;
    height: fit-content;
+   padding-bottom: 2rem;
 
    --col-start: 2;
    --col-width: 6;

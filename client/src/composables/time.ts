@@ -1,6 +1,4 @@
-import { QuizTypes } from "../types"
-
-export const sleep = (ms = 2000) => { return (new Promise(r => setTimeout(r, ms))) };
+import { QuizTypes } from "types"
 
 export const Time = {
 

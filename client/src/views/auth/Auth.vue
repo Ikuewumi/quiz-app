@@ -56,10 +56,6 @@ import lock from "@/assets/lock.svg"
 import user from "@/assets/user.svg"
 import logo from "@/assets/questions.svg"
 import gmail from "@/assets/gmail.svg"
-import useMode from '../../pinia/mode'
-
-const mode = useMode()
-mode.off()
 
 let isLoggingIn = $ref(true);
 const toggleState = () => isLoggingIn = !isLoggingIn
@@ -71,8 +67,8 @@ const toggleState = () => isLoggingIn = !isLoggingIn
 [data-c-auth] {
    width: 100%;
    height: 100%;
-   --col-start: 3;
-   --col-width: 4;
+   --col-start: 2;
+   --col-width: 6;
 
    p {
       font-size: 0.9rem;
