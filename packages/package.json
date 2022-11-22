@@ -24,7 +24,6 @@
       "nodemon": "^2.0.20",
       "ts-node": "^10.9.1",
       "tsc-watch": "^5.0.3",
-      "vite": "^3.1.0",
-      "@tsconfig/node16": "*"
+      "vite": "^3.1.0"
    }
 }

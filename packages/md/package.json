@@ -29,7 +29,6 @@
       "vitest": "../node_modules/vitest"
    },
    "devDependencies": {
-      "@tsconfig/node16": "../node_modules/@tsconfig/node16",
       "@types/node": "../node_modules/@types/node",
       "nodemon": "../node_modules/nodemon",
       "ts-node": "../node_modules/ts-node",
