@@ -2,19 +2,25 @@
    <header data-c-header class="pbl-4 f-long even-cols sgrid">
       <div class="dis-flex j-between">
 
-         <strong class="f-long">quizz</strong>
+         <RouterLink to="/"><strong class="f-long">quiz</strong></RouterLink>
 
          <div class="dis-flex g-10">
 
             <nav class="dis-flex weight-mid f-long a-center g-4">
-               <a href="#">home</a>
-               <a href="#" style="--c: #C678E0">quizzes</a>
-               <a href="#" style="--c: #7E9D43">about</a>
-               <a href="#" style="--c: #E76A43">you</a>
+               <RouterLink to="/">home</RouterLink>
+               <RouterLink to="/quiz" style="--c: #C678E0">quizzes</RouterLink>
+               <RouterLink to="/dev" style="--c: #7E9D43">about</RouterLink>
+               <RouterLink to="/quiz" style="--c: #E76A43">you</RouterLink>
             </nav>
 
 
-            <a href="#" class="cta weight-black pbl-3 size-s0 pin-6">get started</a>
+            <RouterLink v-if="!user.email" to="/auth" class="cta weight-black pbl-3 size-s0 pin-6">get started
+            </RouterLink>
+            <RouterLink to="/user" v-else>
+               <figure data-auth-pic class="img">
+                  <img v-if="user.image" :src="user.image" alt="User Profile Picture">
+               </figure>
+            </RouterLink>
          </div>
 
 
@@ -26,10 +32,38 @@
 </template>
 
 <script setup lang="ts">
+import { RouterLink, useRouter } from "vue-router"
+import { useUser } from "../../pinia/user";
+const user = useUser()
 </script>
 
 <style lang="scss">
-header[data-c-header] {
+@use "../../scss/mixins/input.scss" as *;
+
+[data-c-header] {
+
+   .img {
+      --img-width: 35px;
+      cursor: pointer;
+      width: min(var(--img-width));
+      aspect-ratio: 1 / 1;
+      background: rgb(255, 255, 255);
+      outline: 1px solid rgb(0 0 0 / 0.2);
+      box-shadow: 0 0 2px 2px rgb(0 0 0 / 0.02);
+      outline-offset: -2px;
+      border-radius: 0.5vmax;
+      position: relative;
+      overflow: hidden;
+
+      img {
+         object-fit: cover;
+         width: 100%;
+         height: 100%;
+      }
+
+
+   }
+
    width: 100%;
    height: fit-content;
    padding-bottom: 2rem;
@@ -56,6 +90,7 @@ header[data-c-header] {
       display: flex;
       place-items: center;
       line-height: 1.0;
+      color: #000;
    }
 
 

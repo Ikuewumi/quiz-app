@@ -6,7 +6,7 @@ export const Time = {
 
    parseTime: (x: number) => x >= 10 ? `${x}` : `0${x}`,
 
-   secondsToTime(x: number): QuizTypes.Time {
+   secondsToTime(x: number): { m: string, s: string } {
       const m = Math.floor(x / 60)
       const s = x - (m * 60)
       return { m: Time.parseTime(m), s: Time.parseTime(s) }
@@ -18,3 +18,39 @@ export const Time = {
    }
 
 }
+
+export const str = (...args: any[]) => {
+   return args.reduce((acc, arg) => {
+      return acc && (typeof arg === 'string')
+   }, true)
+}
+
+
+export const num = (...args: any[]) => {
+   return args.reduce((acc, arg) => {
+      return acc && (typeof arg === 'number')
+   }, true)
+}
+
+
+export const arr = (...args: any[]) => {
+   return args.reduce((acc, arg) => {
+      return acc && (Array.isArray(arg))
+   }, true)
+}
+
+
+export const arrStr = (...args: any[]) => {
+   return args.reduce((acc, arg) => {
+      return acc && (arg.reduce(str))
+   }, true)
+}
+
+export const arrFunc = (func: Function, ...args: any[]) => {
+   return args.reduce((acc, arg) => {
+      return acc && (arg.reduce(func))
+   }, true)
+}
+
+
+

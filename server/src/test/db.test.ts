@@ -1,9 +1,9 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { connect, Model } from "mongoose"
-import UserModel from "../models/User"
-import TestModel from "../models/Test"
+import UserModel from "../models/User.js"
+import TestModel from "../models/Test.js"
 import { DocumentTypes } from "types"
-import { DbClass } from "../config/db"
+import { DbClass } from "../config/db.js"
 
 
 describe('Starting db...', () => {

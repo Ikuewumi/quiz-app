@@ -1,8 +1,8 @@
-import { AuthTypes, DocumentTypes, PropsTypes } from "types"
+import { AuthTypes, DocumentTypes, PropsTypes, UserTypes } from "types"
 import { Model, isValidObjectId } from "mongoose"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
-import { Et } from "../config/types"
+import { Et } from "../config/types.js"
 
 class RefreshTokensLibrary {
    access: string
@@ -209,5 +209,123 @@ export class AuthLibrary extends PrivateAuthLibrary {
       const result = await this.collections.user.exists({ email })
       return isValidObjectId(result?._id)
    }
+
+
+
+   async getUserMetadata(aid: string, email: string) {
+      const userDoc = await this.collections.user.findOne({ _id: aid, email })
+      if (!isValidObjectId(userDoc?.id!)) throw Error('user not found')
+      if (!userDoc) throw Error('user not found')
+
+
+      const resultObject = {
+
+         email: userDoc.email,
+         name: userDoc.name,
+         admin: userDoc?.admin ?? false,
+         description: userDoc?.description,
+         bookmarks: userDoc.bookmarks,
+         image: userDoc.image
+
+      } as UserTypes.UserMetadata
+
+
+      return resultObject
+
+   }
+
+   async getUser(aid: string, filter: { [index: string]: any } = {}) {
+      const userDoc = await this.collections.user.findOne({ _id: aid, ...filter })
+      if (!isValidObjectId(userDoc?.id!)) throw Error('user not found')
+      if (!userDoc) throw Error('user not found')
+
+
+      const resultObject = {
+
+         email: userDoc.email,
+         name: userDoc.name,
+         admin: userDoc?.admin ?? false,
+         description: userDoc?.description,
+         bookmarks: userDoc.bookmarks,
+         image: userDoc.image,
+         _id: userDoc.id
+
+      } as UserTypes.UserMetadata
+
+
+      return resultObject
+
+   }
+
+
+
+
+
+
+
+
+
+   async updateUserMetadata(aid: string, email: string, metadata: Metadata) {
+
+      const resultObject: Metadata = {
+
+         name: metadata.name,
+         description: metadata?.description,
+         image: metadata.image
+
+      }
+
+
+      const result = await this.collections.user.updateOne(
+         { _id: aid, email },
+         { $set: resultObject }
+      )
+
+      console.log(result)
+
+      if (!result.modifiedCount) throw Error('user update failed')
+
+      return this.getUserMetadata(aid, email)
+
+   }
+
+
+
+
+
+
+   async deleteUser(aid: string, email: string) {
+
+      const result = await this.collections.user.deleteOne({ _id: aid, email })
+      if (!result.deletedCount) throw Error('could not delete user')
+
+
+      return {
+         message: `The user with this ${email} has been deleted`
+      }
+
+
+   }
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+interface Metadata {
+
+   name: string;
+   description: string;
+   image: string;
 
 }

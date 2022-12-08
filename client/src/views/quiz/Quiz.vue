@@ -1,31 +1,95 @@
 <template>
-   <div data-p data-c-quiz>
-      <quiz-profile></quiz-profile>
-      <section>
+   <div data-p data-p-quiz class="sgrid even-cols">
+      <Metadata v-if="booleans.metadata" :data="quizDoc" :author="authorDoc" @editQuiz="dialogM.show('draft')"
+         @takeQuiz="dialogM.show('start')" />
+      <Dialog v-if="dialogM.booleans.draft" text="Draft quiz?" @no="dialogM.hide('draft')" @yes="editQuiz" />
+      <Modal header="Start Quiz" :showModal="dialogM.booleans.start" @closeModal="dialogM.hide('start')">
+         <form data-f-start-quiz-mode-form @submit.prevent="startQuiz">
+            <label for="mode">
+               <span>Difficulty</span>
+               <select name="mode" v-model="modeInput">
+                  <option value="easy">easy</option>
+                  <option value="medium">medium</option>
+                  <option value="hard">hard</option>
+               </select>
+            </label>
 
-         <header class="dis-grid">
-            <h1><span>Title: </span>Crash Corse History</h1>
-            <quiz-timer></quiz-timer>
-            <quiz-number></quiz-number>
-         </header>
+            <button>Take Quiz</button>
+         </form>
 
-         <main>
+      </Modal>
+      <div data-p data-c-quiz v-if="booleans.quiz">
+         <quiz-profile></quiz-profile>
+         <section>
 
-            <quiz-question></quiz-question>
-            <quiz-options></quiz-options>
-            <quiz-mininav></quiz-mininav>
-            <quiz-nav></quiz-nav>
+            <header class="dis-grid">
+               <h1><span>Title: </span>Crash Corse History</h1>
+               <quiz-timer></quiz-timer>
+               <quiz-number></quiz-number>
+            </header>
 
-         </main>
+            <main>
 
-      </section>
+               <quiz-question></quiz-question>
+               <quiz-options></quiz-options>
+               <quiz-mininav></quiz-mininav>
+               <quiz-nav></quiz-nav>
+
+            </main>
+
+         </section>
+      </div>
    </div>
+
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { clientQuizMock_ } from '../../composables/_mock';
-import { ClientQuiz } from "../../composables/quizClass"
+import { ClientQuiz, QuizData } from "../../composables/quizClass"
+import { apiGet, apiPut } from '../../composables/auth';
+import Metadata from "../../components/quiz/Metadata.vue"
+import Dialog from '../../components/utitlities/Dialog.vue';
+import Modal from "../../components/utitlities/Modal.vue"
+import { useRoute, useRouter } from 'vue-router';
+import { DocumentTypes, UserTypes } from 'types';
+import { createToastPromise, useToast } from '../../composables';
+import useMode from "../../pinia/mode"
+const sleep = (ms = 2000) => { return (new Promise(r => setTimeout(r, ms))) };
+
+// import { QuizNav } from '../../lit/quiz-nav';
+// import { QuizNumber } from '../../lit/quiz-number';
+// import { QuizOptions } from '../../lit/quiz-options';
+// import { QuizProfile } from '../../lit/quiz-profile';
+// import { QuizQuestion } from '../../lit/quiz-question';
+// import { QuizTimer } from '../../lit/quiz-timer';
+// import { QuizData } from "../"
+
+let quizDoc = $ref({} as unknown as DocumentTypes.Quiz)
+let authorDoc = $ref({} as unknown as UserTypes.ClientUserMetadata)
+
+const modeInput = $ref('easy')
+
+const props = defineProps({
+   id: String
+})
+
+
+const booleans = $ref({
+   quiz: false,
+   metadata: false
+} as { [index: string]: boolean })
+
+
+const navigate = (key: "quiz" | "metadata") => {
+
+   for (const elem in booleans) { booleans[elem] = (key === elem) }
+
+
+}
+
+const router = useRouter()
+
 
 
 const getElements = () => {
@@ -53,15 +117,108 @@ const getElements = () => {
 
 }
 
-onMounted(() => {
-   const q = new ClientQuiz(getElements(), clientQuizMock_)
-   q.init().start()
+
+
+const dialogM = $ref({
+   booleans: {
+      draft: false,
+      start: false
+   } as { [index: string]: boolean },
+
+
+   show(key: string) {
+      const isValid = key in dialogM.booleans
+      if (isValid) dialogM.booleans[key] = true
+   },
+
+   hide(key: string) {
+      const isValid = key in dialogM.booleans
+      if (isValid) dialogM.booleans[key] = false
+   }
 })
+
+
+const editQuiz = () => {
+
+   createToastPromise(async () => {
+      console.log(qid)
+      const result = await apiPut(`quiz/drafts/${qid}`, { draft: true })
+      console.log(result)
+      useToast().el.show(result.message, false)
+      await router.push(`/admin/drafts/${qid}`)
+
+
+   }, 'Drafting Quiz...', true)()
+
+
+
+}
+
+
+const qid = $computed(() => { return useRoute().params.id })
+
+
+
+onMounted(async () => {
+   // const q = new ClientQuiz(getElements(), clientQuizMock_)
+   // q.init().start()
+
+   console.log(qid)
+
+
+   const r = await apiGet(`quiz/metadata/${qid}?draft=false`, true)
+   quizDoc = r.quizDoc as DocumentTypes.Quiz
+   authorDoc = r.authorDoc as UserTypes.ClientUserMetadata
+   console.log(r)
+
+
+   navigate("metadata")
+
+
+
+
+
+})
+
+
+
+
+
+
+const startQuiz = async () => {
+
+   createToastPromise(async () => {
+
+      // const mode = modeInput
+      console.log(modeInput)
+      const a = await apiGet(`quiz/${qid}?mode=${modeInput.trim().toLowerCase()}`, true) as QuizData
+      console.log(a)
+
+
+      dialogM.hide('start')
+      navigate('quiz')
+      useMode().hideHeader()
+      await sleep(100)
+      const q = new ClientQuiz(getElements(), a)
+      q.init().start()
+
+   }, 'Setting Quiz Up....', true)()
+
+
+}
 
 </script>
 
 <style lang="scss">
-[data-c-quiz] {
+@use "../../scss/mixins/input.scss" as *;
+
+div[data-c-quiz] {
+   grid-column: 1 / -1;
+   --col-start: 1;
+   --col-width: 8;
+}
+
+div[data-c-quiz] {
 
    height: 100vh;
    display: grid;
@@ -179,6 +336,74 @@ onMounted(() => {
 
    }
 
+
+
+}
+
+[data-p-quiz] {
+   --col-start: 2;
+   --col-width: 6;
+   row-gap: var(--size-6);
+
+   >* {
+      grid-column: 2 / -2;
+   }
+}
+
+
+[data-f-start-quiz-mode-form] {
+
+   display: grid;
+   row-gap: var(--size-6);
+   // grid-auto-flow: column;
+   place-items: center;
+
+   label,
+   .field {
+      width: min(400px, 100%);
+      display: flex;
+      column-gap: 0.9rem;
+      align-items: center;
+
+      span {
+
+         font-size: var(--size-strong, clamp(1ch, 1ch + 2vw, 1.1rem));
+         font-family: var(--f-strong, 'Urbanist');
+         font-weight: var(--weight-strong, 600);
+         color: var(--clr-strong, #777);
+         letter-spacing: 0.5px;
+      }
+   }
+
+   button {
+      @include buttons;
+      --pbl: 0.8rem;
+      --pin: 1.7rem;
+      --border-w: 0.3px;
+      --border-w-h: 0.3px;
+      // justify-self: right;
+   }
+
+   input,
+   textarea,
+   select {
+      @include card;
+      @include input;
+      --bg: #fff;
+      --bg-h: #fff;
+      --clr: #222;
+      --clr-h: #222;
+      border-radius: 0.2vmax;
+      --pbl: 0.7rem;
+      --pin: 0.7rem;
+      --border-color: #00000030;
+      --border-color-h: #00000060;
+   }
+
+   select {
+      --pin: 0;
+      --pbl: 0.5rem;
+   }
 
 
 }

@@ -1,4 +1,6 @@
-import { QuizTypes } from "types"
+import { html } from "lit"
+import { DocumentTypes, QuizTypes, UserTypes } from "types"
+import { useModal, useToast } from "."
 import { QuizMiniNav } from "../lit/quiz-mininav"
 import { QuizNav } from "../lit/quiz-nav"
 import { QuizNumber } from "../lit/quiz-number"
@@ -24,42 +26,57 @@ interface ClientAnswer {
    sid: string
 }
 
+export interface QuizData {
+
+   time: number,
+   mode: QuizTypes.Mode,
+   questionsDoc: DocumentTypes.Question,
+   quizDoc: DocumentTypes.Quiz,
+   userDoc: UserTypes.ClientUserMetadata
+
+}
+
 
 export class ClientQuiz {
    index: number
    answers: ClientAnswer[]
    interval: number
+   isSubmitted: boolean
    timeIsRunning: boolean
 
    constructor(
       private elements: QuizElements,
-      private data: QuizTypes.ClientQuiz
+      private data: QuizData
    ) {
       this.index = 0
       this.answers = []
       this.interval = 0
       this.timeIsRunning = false
+      this.isSubmitted = false
    }
 
 
    init() {
       this.elements.quizProfile.data = {
          img: "",
-         email: this.data.user.email,
-         name: this.data.user.name
+         email: this.data.userDoc.email,
+         name: this.data.userDoc.name
       }
 
       return this
    }
 
    start() {
+      this.data.questionsDoc.data = this.data.questionsDoc.data.map(q => {
+         return { ...q, options: q.options.sort((a, b) => Math.random() - 0.5) }
+      })
       this.elements.quizTimer.time = this.data.time
       this.elements.quizTimer.start()
       this.timeIsRunning = true
 
       this.index = 0
-      this.elements.quizNav.numbers = this.data.questions.length
-      this.elements.quizNumber.numbers = this.data.questions.length
+      this.elements.quizNav.numbers = this.data.questionsDoc.data.length
+      this.elements.quizNumber.numbers = this.data.questionsDoc.data.length
 
       this.listen()
       this.syncCurrentQuestion()
@@ -81,18 +98,23 @@ export class ClientQuiz {
          (e?.detail?.toPrev as boolean === true) ? this.toPrevQuestion() : this.toNextQuestion()
       })
 
+      this.elements.quizMiniNav.addEventListener('miniNavSubmit', (e: any) => {
+         console.log(e)
+         this.promptSubmitQuiz()
+      })
+
       this.elements.quizOptions.addEventListener('optionClick', (e: any) => {
          this.chooseAnswer(e?.detail?.option as string)
       })
    }
 
    toNextQuestion() {
-      this.index = this.data.questions.length > this.index + 1 ? this.index += 1 : 0
+      this.index = this.data.questionsDoc.data.length > this.index + 1 ? this.index += 1 : 0
       this.syncCurrentQuestion()
    }
 
    toPrevQuestion() {
-      this.index = this.index <= 0 ? this.data.questions.length - 1 : this.index -= 1
+      this.index = this.index <= 0 ? this.data.questionsDoc.data.length - 1 : this.index -= 1
       this.syncCurrentQuestion()
    }
 
@@ -111,8 +133,8 @@ export class ClientQuiz {
    }
 
    get currentQuestion() {
-      const i = (this.data.questions.length > this.index) ? this.index : 0
-      return this.data.questions[i]
+      const i = (this.data.questionsDoc.data.length > this.index) ? this.index : 0
+      return this.data.questionsDoc.data[i]
    }
 
    get genOptionsObject() {
@@ -130,7 +152,7 @@ export class ClientQuiz {
    get answersArray() {
 
       const answers = {
-         qid: this.data.metadata.qid as string,
+         qid: this.data.quizDoc._id as string,
          data: [] as QuizTypes.Answer[]
       }
 
@@ -156,6 +178,46 @@ export class ClientQuiz {
       this.elements.quizOptions.options = this.genOptionsObject
       this.elements.quizQuestion.question = this.currentQuestion.q
 
+   }
+
+
+   // async fillQuestion() {
+   //    this.elements.quizQuestion.question = questionObject.q
+   // optionEl.options = getProcessedOptions(questionObject.options)
+   // let slotMarkup = ``
+   // if (this.elements.quizQuestion?.info! > '') {
+   //    const md = await ClientMdLib.mdToHtml(this.elements.quizQuestion?.info!)
+   //    slotMarkup += md
+   // }
+
+   // if (this.elements.quizQuestion?.image! > '') {
+   //    const imgHTML = `<img src=${this.elements.quizQuestion.image} alt>`
+   //    slotMarkup += imgHTML
+   // }
+
+   // this.elements.quizQuestion.innerHTML = slotMarkup
+   // }
+
+   promptSubmitQuiz() {
+      const { isValidMsg, isValid } = this.checkSubmitQuestionNumber()
+
+      if (!isValid) {
+         const toast = useToast()
+         toast.el.show(isValidMsg, true)
+      }
+
+
+
+   }
+
+
+   checkSubmitQuestionNumber() {
+      const percent = 100 * (this.answers.length / this.data.questionsDoc.data.length)
+      const isValid = percent >= 70
+      const isValidMsg = isValid ? `You can submit now` : `You cannot submit less than 70% of the questions answered. You have completed ${this.answers.length} out of ${this.data.questionsDoc.data.length}`
+
+
+      return { isValid, percent, isValidMsg }
    }
 
 

@@ -2,6 +2,7 @@ import { QuizTypes } from "types";
 
 export const clientQuizMock_: QuizTypes.ClientQuiz = {
    time: 30,
+   mode: 'easy',
    user: {
       aid: "fjiewkfdomblsdmfkobwdf",
       email: "ayobamsik@gmail.com",

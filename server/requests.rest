@@ -24,7 +24,7 @@ Content-Type: application/json
 ###
 
 GET http://localhost:5000/protected
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF5b2JhbXNpa0BnbWFpbC5jb20iLCJpZCI6IjYzNmJmM2MyYWI0NmVmZGIyNzI5MWVmNyIsImlhdCI6MTY2ODAyMDQ2NywiZXhwIjoxNjY4MDIxMzY3fQ.Wq0VgQR3bcWYt8nL7zHHe_VCf1rKchvtMDwW62M01TQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF5b2JhbXNpa0BnbWFpbC5jb20iLCJpZCI6IjYzNmJmM2MyYWI0NmVmZGIyNzI5MWVmNyIsImlhdCI6MTY2OTc3Mjk5MCwiZXhwIjoxNjY5NzczODkwfQ.6zj1nf1DUi0vwCXaWwfrKtsPK767tgwQ0UHTyrBJGZY
 Content-Type: application/json
 
 
@@ -34,5 +34,86 @@ POST http://localhost:5000/api/auth/authorize
 Content-Type: application/json
 
 {
-   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF5b2JhbXNpa0BnbWFpbC5jb20iLCJpZCI6IjYzNmJmM2MyYWI0NmVmZGIyNzI5MWVmNyIsImlhdCI6MTY2ODAyMDY0MX0.aqwDwhaTo5A79e_u1PxtquhzyWYtnVqiBbtt1dRbzP0"
+   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNmJmM2MyYWI0NmVmZGIyNzI5MWVmNyIsImVtYWlsIjoiYXlvYmFtc2lrQGdtYWlsLmNvbSIsImlhdCI6MTY3MDI0Nzc2OX0.Btqz9owNfhKl6kJ6lasib5er21JDtUVD2zam6OgyYCg"
 }
+
+
+
+###
+
+
+POST http://localhost:5000/api/quiz/create
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNmJmM2MyYWI0NmVmZGIyNzI5MWVmNyIsImVtYWlsIjoiYXlvYmFtc2lrQGdtYWlsLmNvbSIsImlhdCI6MTY3MDI0Nzc2OSwiZXhwIjoxNjcwMjQ4NjY5fQ.gBXl6Vi8PRUycUR_mYyhdligEYixYFgknZexavEJEOo
+
+{
+   "metadata": {
+      "title": "Property Crimes",
+      "description": "Despite making up the racist views of people",
+      "image": "",
+      "tags": ["african", "american"]
+   },
+   "questions": [
+      {
+         "q": "what is albert einstein",
+         "options": ["sociologist", "chemist", "kingpin", "physicist"]
+      }
+   ]
+}
+
+
+###
+
+
+PUT http://localhost:5000/api/quiz/drafts/638dea4c9cbf88816d1edf32
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNmJmM2MyYWI0NmVmZGIyNzI5MWVmNyIsImVtYWlsIjoiYXlvYmFtc2lrQGdtYWlsLmNvbSIsImlhdCI6MTY3MDI0Nzc2OSwiZXhwIjoxNjcwMjQ4NjY5fQ.gBXl6Vi8PRUycUR_mYyhdligEYixYFgknZexavEJEOo
+
+{
+   "draft": false
+}
+
+
+
+
+###
+
+
+
+
+GET http://localhost:5000/api/quiz/drafts/638dea4c9cbf88816d1edf32
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNmJmM2MyYWI0NmVmZGIyNzI5MWVmNyIsImVtYWlsIjoiYXlvYmFtc2lrQGdtYWlsLmNvbSIsImlhdCI6MTY3MDI0Nzc2OSwiZXhwIjoxNjcwMjQ4NjY5fQ.gBXl6Vi8PRUycUR_mYyhdligEYixYFgknZexavEJEOo
+
+
+
+
+
+###
+
+
+GET http://localhost:5000/api/quiz/638dea4c9cbf88816d1edf32?mode=easy
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNmJmM2MyYWI0NmVmZGIyNzI5MWVmNyIsImVtYWlsIjoiYXlvYmFtc2lrQGdtYWlsLmNvbSIsImlhdCI6MTY3MDI0Nzc2OSwiZXhwIjoxNjcwMjQ4NjY5fQ.gBXl6Vi8PRUycUR_mYyhdligEYixYFgknZexavEJEOo
+
+
+
+###
+
+
+
+
+
+GET http://localhost:5000/api/admin/drafts
+Content-Type: application/json
+Authorization:  Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNmJmM2MyYWI0NmVmZGIyNzI5MWVmNyIsImVtYWlsIjoiYXlvYmFtc2lrQGdtYWlsLmNvbSIsImlhdCI6MTY3MDI0Nzc2OSwiZXhwIjoxNjcwMjQ4NjY5fQ.gBXl6Vi8PRUycUR_mYyhdligEYixYFgknZexavEJEOo
+
+
+
+###
+
+
+DELETE http://localhost:5000/api/quiz/638dea4c9cbf88816d1edf32
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNmJmM2MyYWI0NmVmZGIyNzI5MWVmNyIsImVtYWlsIjoiYXlvYmFtc2lrQGdtYWlsLmNvbSIsImlhdCI6MTY3MDI0Nzc2OSwiZXhwIjoxNjcwMjQ4NjY5fQ.gBXl6Vi8PRUycUR_mYyhdligEYixYFgknZexavEJEOo
+

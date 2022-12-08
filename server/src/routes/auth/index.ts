@@ -1,7 +1,7 @@
 import { Router, Response } from "express"
-import { Et } from "../../config/types"
-import { Ef } from "../../config/index"
-import { AuthClass } from "../../app"
+import { Et } from "../../config/types.js"
+import { Ef } from "../../config/index.js"
+import { AuthClass } from "../../app.js"
 
 const r = Router()
 

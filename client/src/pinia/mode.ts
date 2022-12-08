@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 
-export default defineStore(
+const useMode = defineStore(
    'useMode',
    {
       state: () => {
@@ -24,3 +24,5 @@ export default defineStore(
       }
    }
 )
+
+export default useMode

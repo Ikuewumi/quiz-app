@@ -1,5 +1,4 @@
 import { NodeHtmlMarkdown } from "node-html-markdown";
-import { JSDOM } from "jsdom";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 export const MdLib = {
@@ -8,6 +7,7 @@ export const MdLib = {
         return x;
     },
     async mdToHtml(md) {
+        const { JSDOM } = await import('jsdom');
         const { window } = new JSDOM('');
         let dom = DOMPurify(window);
         let x = marked(md, { "headerIds": false });

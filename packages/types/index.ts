@@ -1,12 +1,8 @@
 import { Model, ObjectId } from "mongoose"
+import { z } from "zod"
 
 export namespace DocumentTypes {
-   export interface User extends Types.TimeData, AuthTypes.BasicUser {
-      name: string
-      admin: boolean
-      description: string
-      image: string
-      bookmarks: Array<string>
+   export interface User extends Types.TimeData, AuthTypes.BasicUser, UserTypes.UserMetadata {
    }
 
 
@@ -32,6 +28,37 @@ export namespace DocumentTypes {
       data: Array<T>
    }
 
+   export interface Time extends Types.TimeData, QuizTypes.Time { }
+}
+
+
+export namespace UserTypes {
+   export interface UserMetadata extends Types.TimeData {
+      name: string
+      email: string
+      admin: boolean
+      description: string
+      image: string
+      bookmarks: Array<string>
+   }
+
+   export interface ClientUserMetadata {
+      name: string
+      email: string
+      admin: boolean
+      description: string
+      image: string
+      bookmarks: Array<string>
+      _id: string
+      id: string
+   }
+}
+
+
+export namespace MessageTypes {
+   export interface Msg {
+      message: string
+   }
 }
 
 
@@ -85,7 +112,9 @@ export namespace Types {
 
    export interface TimeData {
       createdAt?: string
-      updatedAt?: string
+      updatedAt?: string,
+      id?: string,
+      _id?: string
    }
 
 
@@ -93,6 +122,11 @@ export namespace Types {
 
 
 export namespace QuizTypes {
+
+   export interface Time {
+      timeToEnd: number
+      mode: Mode
+   }
 
 
    export interface Sid {
@@ -103,17 +137,21 @@ export namespace QuizTypes {
       qid: string
    }
 
-   interface Q {
+   export interface Q {
       q: string,
       info?: string,
-      options: Array<string>
+      options: Array<string>,
+      image?: string
    }
 
    export interface QuizMetadata {
       title: string,
       description: string,
       image: string,
-      tags: Array<string>
+      tags: Array<string>,
+      bookmarks?: number,
+      showCorrection?: boolean,
+      drafted?: boolean
    }
 
    export interface QMetadata extends Qid, QuizMetadata { }
@@ -131,9 +169,12 @@ export namespace QuizTypes {
       data: Array<Question>
    }
 
+   export type Mode = "easy" | "medium" | "hard"
+
    export interface ClientQuiz {
 
       time: number
+      mode?: Mode
       questions: Question[]
       metadata: QMetadata
       user: {
@@ -158,3 +199,57 @@ export namespace QuizTypes {
 
 
 }
+
+
+export namespace ApiTypes {
+
+   export interface PaginatedData<T> {
+
+      data: T[],
+      count: number,
+      page: number,
+      maxPageCount: number,
+      pageCount: number,
+
+
+   }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export namespace ZodTypes {
+   export const zUserMetadata = z.object({
+      name: z.string().min(1),
+      description: z.string().min(0),
+      image: z.string()
+   })
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

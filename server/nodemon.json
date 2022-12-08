@@ -1,0 +1,13 @@
+{
+   "restartable": "rs",
+   "ignore": [
+      ".git",
+      "node_modules/**/node_modules",
+      "test"
+   ],
+   "verbose": true,
+   "execMap": {
+      "ts": "ts-node --esm --transpiler esbuild"
+   },
+   "ext": "ts, graphql"
+}

@@ -1,11 +1,7 @@
 import { Model } from "mongoose";
+import { z } from "zod";
 export declare namespace DocumentTypes {
-    interface User extends Types.TimeData, AuthTypes.BasicUser {
-        name: string;
-        admin: boolean;
-        description: string;
-        image: string;
-        bookmarks: Array<string>;
+    interface User extends Types.TimeData, AuthTypes.BasicUser, UserTypes.UserMetadata {
     }
     interface Token extends Types.TimeData {
         token: string;
@@ -27,6 +23,23 @@ export declare namespace DocumentTypes {
     interface Q<T> {
         qId: string;
         data: Array<T>;
+    }
+    interface Time extends Types.TimeData, QuizTypes.Time {
+    }
+}
+export declare namespace UserTypes {
+    interface UserMetadata {
+        name: string;
+        email: string;
+        admin: boolean;
+        description: string;
+        image: string;
+        bookmarks: Array<string>;
+    }
+}
+export declare namespace MessageTypes {
+    interface Msg {
+        message: string;
     }
 }
 export declare namespace AuthTypes {
@@ -65,50 +78,91 @@ export declare namespace Types {
     interface TimeData {
         createdAt?: string;
         updatedAt?: string;
+        id?: string;
+        _id?: string;
     }
 }
 export declare namespace QuizTypes {
-    export interface Sid {
+    interface Time {
+        timeToEnd: number;
+        mode: Mode;
+    }
+    interface Sid {
         sid: string;
     }
-    export interface Qid {
+    interface Qid {
         qid: string;
     }
     interface Q {
         q: string;
         info?: string;
         options: Array<string>;
+        image?: string;
     }
-    export interface QuizMetadata {
+    interface QuizMetadata {
         title: string;
         description: string;
         image: string;
         tags: Array<string>;
+        bookmarks?: number;
+        showCorrection?: boolean;
+        drafted?: boolean;
     }
-    export interface ClientQuestion extends Q {
+    interface QMetadata extends Qid, QuizMetadata {
     }
-    export interface Question extends Q, Sid, Qid {
+    interface ClientQuestion extends Q {
     }
-    export interface Answer extends Sid, Qid {
+    interface Question extends Q, Sid, Qid {
+    }
+    interface Answer extends Sid, Qid {
         answer: string;
     }
-    export interface Quiz {
+    interface Quiz {
         qId: string;
         data: Array<Question>;
     }
-    export interface ClientQuiz {
+    type Mode = "easy" | "medium" | "hard";
+    interface ClientQuiz {
         time: number;
+        mode?: Mode;
         questions: Question[];
-        metadata: QuizMetadata;
+        metadata: QMetadata;
         user: {
             name: string;
             email: string;
             aid: string;
         };
     }
-    export interface Time {
+    interface Time {
         m: number | (number | string);
         s: number | (number | string);
     }
-    export {};
+    interface ClientAnswer {
+        qid: string;
+        data: Answer[];
+    }
+}
+export declare namespace ApiTypes {
+    interface PaginatedData<T> {
+        data: T[];
+        count: number;
+        page: number;
+        maxPageCount: number;
+        pageCount: number;
+    }
+}
+export declare namespace ZodTypes {
+    const zUserMetadata: z.ZodObject<{
+        name: z.ZodString;
+        description: z.ZodString;
+        image: z.ZodString;
+    }, "strip", z.ZodTypeAny, {
+        name?: string;
+        image?: string;
+        description?: string;
+    }, {
+        name?: string;
+        image?: string;
+        description?: string;
+    }>;
 }

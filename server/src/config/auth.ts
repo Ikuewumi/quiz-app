@@ -1,6 +1,6 @@
 import { DocumentTypes } from "types"
-import { AuthLibrary } from "../classes/Auth"
-import { DbClass } from "../config/db"
+import { AuthLibrary } from "../classes/Auth.js"
+import { DbClass } from "../config/db.js"
 
 
 

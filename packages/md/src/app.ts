@@ -1,5 +1,4 @@
 import { NodeHtmlMarkdown } from "node-html-markdown";
-import { JSDOM } from "jsdom";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
@@ -11,6 +10,7 @@ export const MdLib = {
 
 
    async mdToHtml(md: string) {
+      const { JSDOM } = await import('jsdom')
       const { window } = new JSDOM('')
       let dom = DOMPurify(window as unknown as Window)
       let x: string = marked(md, { "headerIds": false })

@@ -1,10 +1,10 @@
 import { describe, it, expect, afterAll, beforeAll } from "vitest";
 import { AuthTypes, DocumentTypes } from "types"
 import { sleep } from "helpers"
-import { generateAuthClass } from "../config/auth";
-import { DbClass } from "../config/db"
-import { d } from "./config/index";
-import { AuthLibrary } from "../classes/Auth"
+import { generateAuthClass } from "../config/auth.js";
+import { DbClass } from "../config/db.js"
+import { d } from "./config/index.js";
+import { AuthLibrary } from "../classes/Auth.js"
 import { Model } from "mongoose";
 
 
