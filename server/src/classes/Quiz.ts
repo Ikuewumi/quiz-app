@@ -1,10 +1,9 @@
 import { MdLib } from 'md'
 import { Model, isValidObjectId, Document, Types, FilterQuery } from "mongoose"
 import { QuizTypes, DocumentTypes } from 'types'
-import { str } from "helpers"
+import { arr, str } from "helpers"
 import shortid from 'shortid'
 import { DbLibrary } from './Db.js'
-import { urlToHttpOptions } from 'url'
 
 
 
@@ -31,6 +30,23 @@ export class Quiz {
       }
    }
 
+   static checkAnswers(payload: DocumentTypes.Answer) {
+      const metaisValid = str(payload?.qid) as boolean
+      const checkAnswer = (payload: QuizTypes.Answer) => str(payload?.answer, payload?.qid, payload?.sid)
+      const answersAreValid = arr(payload?.data) && payload?.data.reduce((acc, curr) => {
+         return !!(acc && checkAnswer(curr))
+      }, true)
+
+      if (!(metaisValid && answersAreValid)) throw Error('whoops! the answer is invalid')
+
+
+      return {
+         qid: payload.qid,
+         data: payload.data
+      }
+
+   }
+
 
    static genClass(DbClass: DbLibrary) {
       const r = new Quiz({
@@ -52,6 +68,12 @@ export class Quiz {
 
 
    async save(aid: string, metadata: QuizTypes.QuizMetadata, questions: QuizTypes.ClientQuestion[],) {
+
+      const qD = await this.collections.quiz.exists({ title: metadata.title })
+
+      if (qD) throw Error('please use another title. this one has been taken')
+
+
       const nQuiz: DocumentTypes.Quiz = {
          aid: aid,
          title: metadata.title,
@@ -334,7 +356,8 @@ export class Quiz {
 
       let quizScores = {
          score: 0,
-         total: answersDoc.data.length
+         total: answersDoc.data.length,
+         quizDoc
       }
 
       userAnswers.data.forEach((ans_) => {

@@ -22,21 +22,21 @@ export const Time = {
 export const str = (...args: any[]) => {
    return args.reduce((acc, arg) => {
       return acc && (typeof arg === 'string')
-   }, true)
+   }, true) as boolean
 }
 
 
 export const num = (...args: any[]) => {
    return args.reduce((acc, arg) => {
       return acc && (typeof arg === 'number')
-   }, true)
+   }, true) as boolean
 }
 
 
 export const arr = (...args: any[]) => {
    return args.reduce((acc, arg) => {
       return acc && (Array.isArray(arg))
-   }, true)
+   }, true) as boolean
 }
 
 

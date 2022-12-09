@@ -7,7 +7,7 @@
    ],
    "verbose": true,
    "execMap": {
-      "ts": "ts-node --esm --transpiler esbuild"
+      "ts": "ts-node --esm"
    },
    "ext": "ts, graphql"
 }

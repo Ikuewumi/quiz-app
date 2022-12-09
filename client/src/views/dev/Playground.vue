@@ -1,23 +1,11 @@
 <template>
    <div data-p class="sgrid even-cols p-center" data-c-playground>
 
-      <Metadata />
-      <!-- <div data-f-quiz-card-list>
-         <QuizCard />
-         <QuizCard />
-      </div>
-      <QuizCard /> -->
-      <Dialog :showDialog="showDialog" @no="showDialog = false" @yes="showDialog = false" text="A Dummy Dialog" />
-
 
    </div>
 </template>
 
 <script setup lang="ts">
-import QuizCard from '../../components/quiz/QuizCard.vue';
-import Dialog from '../../components/utitlities/Dialog.vue';
-import Metadata from '../../components/quiz/Metadata.vue';
-
 const a = (...args: any[]) => console.log(args)
 
 const showDialog = $ref(true)

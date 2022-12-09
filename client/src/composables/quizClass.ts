@@ -1,24 +1,17 @@
-import { html } from "lit"
 import { DocumentTypes, QuizTypes, UserTypes } from "types"
 import { useModal, useToast } from "."
-import { QuizMiniNav } from "../lit/quiz-mininav"
-import { QuizNav } from "../lit/quiz-nav"
-import { QuizNumber } from "../lit/quiz-number"
-import { Option, QuizOptions } from "../lit/quiz-options"
-import { QuizProfile } from "../lit/quiz-profile"
-import { QuizQuestion } from "../lit/quiz-question"
-import { QuizTimer } from "../lit/quiz-timer"
+import { Option, } from "../lit/quiz-options"
 // import { ClientMdLib } from "md"
 
 interface QuizElements {
-   quizPage: Element
-   quizTimer: QuizTimer
-   quizOptions: QuizOptions
-   quizMiniNav: QuizMiniNav
-   quizNav: QuizNav
-   quizNumber: QuizNumber
-   quizQuestion: QuizQuestion
-   quizProfile: QuizProfile
+   quizPage: HTMLDivElement,
+   quizTimer: HTMLElementTagNameMap["quiz-timer"],
+   quizOptions: HTMLElementTagNameMap["quiz-options"],
+   quizMiniNav: HTMLElementTagNameMap["quiz-mininav"],
+   quizNav: HTMLElementTagNameMap["quiz-nav"],
+   quizNumber: HTMLElementTagNameMap["quiz-number"],
+   quizQuestion: HTMLElementTagNameMap["quiz-question"],
+   quizProfile: HTMLElementTagNameMap["quiz-profile"]
 }
 
 interface ClientAnswer {
@@ -99,7 +92,6 @@ export class ClientQuiz {
       })
 
       this.elements.quizMiniNav.addEventListener('miniNavSubmit', (e: any) => {
-         console.log(e)
          this.promptSubmitQuiz()
       })
 
@@ -107,6 +99,27 @@ export class ClientQuiz {
          this.chooseAnswer(e?.detail?.option as string)
       })
    }
+
+
+
+
+
+   removeListeners() {
+      this.elements.quizTimer.removeEventListener('quizTimerStopped', _ => { })
+      this.elements.quizNav.removeEventListener('navTabbed', _ => { })
+      this.elements.quizMiniNav.removeEventListener('miniNavClick', _ => { })
+      this.elements.quizMiniNav.removeEventListener('miniNavSubmit', _ => { })
+      this.elements.quizOptions.removeEventListener('optionClick', _ => { })
+      this.elements.quizPage.removeEventListener('quiz-submit', _ => { })
+
+
+
+   }
+
+
+
+
+
 
    toNextQuestion() {
       this.index = this.data.questionsDoc.data.length > this.index + 1 ? this.index += 1 : 0
@@ -177,26 +190,26 @@ export class ClientQuiz {
 
       this.elements.quizOptions.options = this.genOptionsObject
       this.elements.quizQuestion.question = this.currentQuestion.q
+      this.fillQuestion()
 
    }
 
 
-   // async fillQuestion() {
-   //    this.elements.quizQuestion.question = questionObject.q
-   // optionEl.options = getProcessedOptions(questionObject.options)
-   // let slotMarkup = ``
-   // if (this.elements.quizQuestion?.info! > '') {
-   //    const md = await ClientMdLib.mdToHtml(this.elements.quizQuestion?.info!)
-   //    slotMarkup += md
-   // }
+   async fillQuestion() {
+      let slotMarkup = ``
+      if (this.currentQuestion.info! > '') {
+         const { ClientMdLib } = await import("md")
+         const md = await ClientMdLib.mdToHtml(this.currentQuestion.info!)
+         slotMarkup += md
+      }
 
-   // if (this.elements.quizQuestion?.image! > '') {
-   //    const imgHTML = `<img src=${this.elements.quizQuestion.image} alt>`
-   //    slotMarkup += imgHTML
-   // }
+      if (this.currentQuestion.image! > '') {
+         const imgHTML = `<img src=${this.currentQuestion.image} alt>`
+         slotMarkup += imgHTML
+      }
 
-   // this.elements.quizQuestion.innerHTML = slotMarkup
-   // }
+      this.elements.quizQuestion.innerHTML = slotMarkup
+   }
 
    promptSubmitQuiz() {
       const { isValidMsg, isValid } = this.checkSubmitQuestionNumber()
@@ -204,7 +217,17 @@ export class ClientQuiz {
       if (!isValid) {
          const toast = useToast()
          toast.el.show(isValidMsg, true)
+         throw Error(isValidMsg)
       }
+
+
+      const submitEvt = new CustomEvent('quiz-submit', {
+         detail: { answers: this.answersArray },
+         bubbles: true
+      }) as HTMLElementEventMap["quiz-submit"]
+
+
+      this.elements.quizQuestion.dispatchEvent(submitEvt)
 
 
 
@@ -213,8 +236,8 @@ export class ClientQuiz {
 
    checkSubmitQuestionNumber() {
       const percent = 100 * (this.answers.length / this.data.questionsDoc.data.length)
-      const isValid = percent >= 70
-      const isValidMsg = isValid ? `You can submit now` : `You cannot submit less than 70% of the questions answered. You have completed ${this.answers.length} out of ${this.data.questionsDoc.data.length}`
+      const isValid = percent >= 50
+      const isValidMsg = isValid ? `You can submit now` : `You cannot submit less than 50% of the questions answered. You have completed ${this.answers.length} out of ${this.data.questionsDoc.data.length}`
 
 
       return { isValid, percent, isValidMsg }
@@ -224,3 +247,23 @@ export class ClientQuiz {
 }
 
 export { }
+
+
+interface QuizSubmitEvent extends Event {
+   detail: {
+      answers: {
+         data: QuizTypes.Answer[],
+         qid: string
+      }
+   },
+   bubbles: boolean
+}
+
+
+
+//TODO : add typings for the quiz-submit event
+declare global {
+   interface HTMLElementEventMap {
+      "quiz-submit": QuizSubmitEvent
+   }
+}

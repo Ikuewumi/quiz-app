@@ -6,9 +6,9 @@
 use('quiz-app');
 
 
-db.quizzes.find({})
-// db.quizzes.updateMany({}, { $set: { drafted: true }})
+// db.quizzes.find({})
 // db.questions.find({})
+// db.quizzes.updateMany({}, { $set: { drafted: true }})
 // db.answers.find({})
 // db.questions.deleteMany({})
 // db.answers.deleteMany({})

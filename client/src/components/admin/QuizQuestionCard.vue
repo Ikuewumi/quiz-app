@@ -31,7 +31,7 @@ import { useQuizCreation } from '../../pinia/quizCreate';
 import { Option } from '../../lit/quiz-options';
 import { onMounted } from 'vue';
 import { QuizTypes } from "types"
-import { ClientMdLib } from 'md';
+// import { ClientMdLib } from 'md';
 
 const emit = defineEmits<{
    (event: 'stopPreview'): void,
@@ -60,6 +60,7 @@ const fillFields = async (questionObject: QuizTypes.ClientQuestion) => {
    optionEl.options = getProcessedOptions(questionObject.options)
    let slotMarkup = ``
    if (questionObject?.info! > '') {
+      const { ClientMdLib } = await import("md")
       const md = await ClientMdLib.mdToHtml(questionObject?.info!)
       slotMarkup += md
    }

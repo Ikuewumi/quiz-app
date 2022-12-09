@@ -4,7 +4,7 @@ import { useToast } from ".";
 import { fileToDataUrl } from "./img";
 import { StoreTypings } from "../pinia/quizQuestion";
 import { Store, StoreDefinition } from "pinia";
-import { ClientMdLib } from "md"
+// import { ClientMdLib } from "md"
 import { html } from "lit";
 
 
@@ -41,6 +41,7 @@ export class QuizQuestionLogic {
    }
 
    static async parseMd(mdInput: string) {
+      const { ClientMdLib } = await import("md")
       const html = await ClientMdLib.mdToHtml(mdInput)
       let testEl = document.createElement('div')
       testEl.innerHTML = html

@@ -1,29 +1,32 @@
 <template>
-   <div data-c-dialog @click.self="emit('no')" role="alertdialog" v-if="props.showDialog" class="sgrid even-cols">
-      <section>
-         <h3>{{ props.text }}</h3>
-         <footer>
-            <span tabindex="-1" @click="emit('no')">
-               <svg style="--f:#f53c2f" viewBox="0 0 26 26">
-                  <use href="#delete_metro"></use>
-               </svg>
-            </span>
+   <Teleport to="#modals">
+      <div data-c-dialog @click.self="emit('no')" role="alertdialog" v-if="props.showDialog" class="sgrid even-cols">
+         <section>
+            <h3>{{ props.text }}</h3>
+            <footer>
+               <span tabindex="-1" @click="emit('no')">
+                  <svg style="--f:#f53c2f" viewBox="0 0 26 26">
+                     <use href="#delete_metro"></use>
+                  </svg>
+               </span>
 
 
 
-            <span tabindex="-1" @click="emit('yes')">
-               <svg style="--f:#4caf50" viewBox="0 0 26 26">
-                  <use href="#checkmark_metro"></use>
-               </svg>
-            </span>
+               <span tabindex="-1" @click="emit('yes')">
+                  <svg style="--f:#4caf50" viewBox="0 0 26 26">
+                     <use href="#checkmark_metro"></use>
+                  </svg>
+               </span>
 
 
-         </footer>
-      </section>
-   </div>
+            </footer>
+         </section>
+      </div>
+   </Teleport>
 </template>
 
 <script setup lang="ts">
+import { Teleport } from "vue"
 const props = defineProps({
    text: {
       default: "Do something?"

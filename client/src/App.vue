@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, watchEffect } from 'vue';
 import Header from './components/constants/Header.vue';
+import Footer from "./components/constants/Footer.vue";
 import Loader from './components/utitlities/Loader.vue';
 import useMode from './pinia/mode'
 import { useRoute } from 'vue-router';
@@ -34,11 +35,31 @@ onMounted(async () => {
 
 <template>
    <Header v-if="false || mode.modeHeader" />
+
+   <div id="main">
+      <RouterView />
+   </div>
    <Loader />
 
-   <RouterView />
+   <Footer v-if="false || mode.modeHeader" />
 </template>
 
 <style lang="scss">
+#app {
+   display: flex;
+   flex-direction: column;
+   align-content: normal;
+   // grid-template-rows: ;
+}
 
+footer {
+   margin-top: auto;
+   // margin-bottom: 0.4rem;
+}
+
+#main {
+   align-self: flex-start;
+   justify-self: auto;
+   padding-bottom: 2rem;
+}
 </style>

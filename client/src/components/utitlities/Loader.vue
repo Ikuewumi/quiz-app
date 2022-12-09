@@ -1,6 +1,6 @@
 <template>
    <Teleport to="#modals">
-      <div data-c-loader v-if="loader.msg > ''">
+      <div data-c-loader v-if="loader.msg">
          <svg viewBox="0 0 605.46608 508.2661">
             <use href="#loader_question_svg"></use>
          </svg>
@@ -42,7 +42,7 @@ const loader = useLoader()
    svg,
    figure {
       width: var(--w-img, min(200px, 40vw));
-      // filter: opacity(0.3);
+      filter: blur(0.5px);
 
       animation: loader-opacity var(--anim-time) ease-out infinite alternate;
 

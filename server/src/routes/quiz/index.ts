@@ -136,6 +136,24 @@ r.post('/create', verifyAdmin, async (req: Et.Req, res: Et.Res) => {
 
 
 
+r.post('/mark/:id', async (req: Et.Req, res: Et.Res) => {
+   try {
+      const payload = Quiz.checkAnswers(req?.body ?? {})
+      let Q = Quiz.genClass(DbClass)
+      const result = await Q.markQuiz(payload)
+      Q = null as unknown as Quiz
+
+
+      return Ef.obj(res, result, 200)
+
+
+   }
+   catch (e) { return Ef.msg(res, e ?? `Something went wrong`, 502) }
+
+
+
+})
+
 
 
 //update operations
