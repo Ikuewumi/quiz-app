@@ -11,6 +11,7 @@ export namespace DocumentTypes {
    }
 
    export interface History extends Types.TimeData, HistoryTypes.History { }
+   export interface Tag extends Types.TimeData, TagTypes.Tag { }
 
    export interface Test extends Types.TimeData {
       name: string
@@ -232,6 +233,14 @@ export namespace HistoryTypes {
    }
 
 
+
+}
+
+export namespace TagTypes {
+
+   export interface Tag {
+      tags: Array<string>
+   }
 
 }
 

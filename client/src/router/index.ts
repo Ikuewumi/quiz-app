@@ -1,4 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { useToast } from '../composables'
+import { getToken } from '../composables/env'
+import { useUser } from '../pinia/user'
 
 const routes: RouteRecordRaw[] = [
    {
@@ -66,5 +69,24 @@ const router = createRouter({
       return { top: 0 }
    }
 })
+
+const normieRoutes = ['home', 'auth']
+
+
+router.beforeEach(async (to, from) => {
+   if (normieRoutes.includes(to.name! as string)) {
+      return true
+   } else {
+      const token = await getToken()
+      if (!token) throw Error('')
+      return true
+   }
+})
+
+router.onError((error) => {
+   useToast().el.show(`oops! you don't have permissions for this page, login or signup to become a user`, true)
+   router.push('/auth')
+})
+
 
 export default router

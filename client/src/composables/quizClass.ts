@@ -1,7 +1,7 @@
 import { DocumentTypes, QuizTypes, UserTypes } from "types"
 import { sleep, useModal, useToast } from "."
 import { Option, } from "../lit/quiz-options"
-import { ClientMdLib } from "md"
+// import { ClientMdLib } from "md"
 
 interface QuizElements {
    quizPage: HTMLDivElement,
@@ -204,6 +204,7 @@ export class ClientQuiz {
    async fillQuestion() {
       let slotMarkup = ``
       if (this.currentQuestion.info! > '') {
+         const { ClientMdLib } = await import("md");
          const md = await ClientMdLib.mdToHtml(this.currentQuestion.info!)
          slotMarkup += md
       }

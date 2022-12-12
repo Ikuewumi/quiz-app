@@ -11,6 +11,6 @@ const schema = new Schema<DocumentTypes.History>({
 })
 schema.set('timestamps', true)
 
-const m = model('hostory', schema)
+const m = model('history', schema)
 
 export default m

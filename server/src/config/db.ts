@@ -6,6 +6,7 @@ import QuizModel from "../models/Quiz.js"
 import QuestionModel from "../models/Question.js"
 import AnswerModel from "../models/Answer.js"
 import HistoryModel from "../models/History.js"
+import TagModel from "../models/Tag.js"
 import dotenv from "dotenv"
 dotenv.config({})
 
@@ -18,7 +19,8 @@ export const DbClass = new DbLibrary(process.env.DB_URI ?? 'mongodb://127.0.0.1:
    quiz: QuizModel,
    question: QuestionModel,
    answer: AnswerModel,
-   history: HistoryModel
+   history: HistoryModel,
+   tag: TagModel
 })
 
 export const connectDb = async () => DbClass.connectToDb()

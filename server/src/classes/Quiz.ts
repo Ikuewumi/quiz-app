@@ -4,6 +4,7 @@ import { QuizTypes, DocumentTypes } from 'types'
 import { arr, str } from "helpers"
 import shortid from 'shortid'
 import { DbLibrary } from './Db.js'
+import { Tag } from './Tag.js'
 
 
 
@@ -88,6 +89,12 @@ export class Quiz {
       const nQuizDoc = await (new this.collections.quiz(nQuiz)).save()
       const nQuestion: DocumentTypes.Question = { qid: nQuizDoc.id, data: [] }
       const nAnswer: DocumentTypes.Answer = { qid: nQuizDoc.id, data: [] }
+
+
+      let T = Tag.createClass()
+      T.updateTags(metadata.tags)
+      T = null as unknown as Tag
+
 
       questions.forEach(q => {
          const { question, answer } = this.processQuestion(q, nQuizDoc.id)
@@ -379,6 +386,12 @@ export class Quiz {
       const questionsDoc = await this.collections.questions.findById(quizDoc?.questions!)!
       if (!(isValidObjectId(questionsDoc?.id))) throw Error('quiz not found')
 
+
+      let T = Tag.createClass()
+      T.updateTags([], quizDoc?.tags!)
+      T = null as unknown as Tag
+
+
       const promises = [
 
          this.collections.quiz.deleteOne({ id: qid! }),
@@ -442,6 +455,10 @@ export class Quiz {
       if (!quizDoc) throw Error('quiz not found')
       if (!(isValidObjectId(quizDoc?.id))) throw Error('quiz not found')
 
+
+
+
+
       const questionsDoc = await this.collections.questions.findById(quizDoc?.questions!)!
       // if (!questionsDoc) throw Error('quiz not found')
       if (!(isValidObjectId(questionsDoc?.id))) throw Error('quiz not found')
@@ -459,6 +476,11 @@ export class Quiz {
 
       const nQuestion: DocumentTypes.Question = { qid, data: [] }
       const nAnswer: DocumentTypes.Answer = { qid, data: [] }
+
+
+      let T = Tag.createClass()
+      T.updateTags(payload.metadata.tags, quizDoc.tags)
+      T = null as unknown as Tag
 
       payload.questions.forEach(q => {
          const { question, answer } = this.processQuestion(q, qid)

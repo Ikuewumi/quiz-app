@@ -3,6 +3,7 @@ import quiz from './quiz/index.js'
 import user from "./user/index.js"
 import admin from "./admin/index.js"
 import lists from "./lists/index.js"
+import public_ from "./public/index.js"
 import { Router } from "express"
 import { Et } from "../config/types.js"
 import { Ef } from "../config/index.js"
@@ -14,6 +15,7 @@ r.use('/quiz', quiz)
 r.use('/user', user)
 r.use('/admin', admin)
 r.use('/lists', lists)
+r.use('/public', public_)
 
 export default r
 
