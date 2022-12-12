@@ -40,18 +40,12 @@ interface Booleans {
    [index: string]: boolean
 }
 
-const useCreation = useQuizCreation()
 let LogicClass = $ref(null as unknown as QuizCreationLogic)
+const useCreation = useQuizCreation()
 const route = useRoute()
 const router = useRouter()
-
 const isUpdateRoute = $computed(() => route.name === 'update')
-
-
-const dialogData = $ref({
-   text: computed(() => isUpdateRoute ? 'Update quiz?' : 'Create New Quiz?'),
-   boolean: false,
-})
+const dialogData = $ref({ text: computed(() => isUpdateRoute ? 'Update quiz?' : 'Create New Quiz?'), boolean: false })
 const dialogText = $computed(() => isUpdateRoute ? 'Update quiz?' : 'Create New Quiz?')
 
 
@@ -61,6 +55,7 @@ const booleans = $ref({
    group: false,
    preview: false
 } as Booleans)
+
 const chooseBool = (val: string) => {
    for (const elem in booleans) {
       booleans[elem] = false

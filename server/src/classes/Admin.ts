@@ -3,6 +3,7 @@ import { DocumentTypes } from "types";
 import { AuthLibrary } from "./Auth.js";
 import { Quiz } from "./Quiz.js"
 import { DbClass } from "../config/db.js";
+import { History } from "./History.js";
 
 
 
@@ -35,14 +36,16 @@ export class User {
 
 
 
-export class UserListClass {
+export class UserListClass extends History {
 
 
    constructor(
       public collections: {
-         quiz: Model<DocumentTypes.Quiz>
+         quiz: Model<DocumentTypes.Quiz>,
+         history: Model<DocumentTypes.History>
       }
    ) {
+      super({ history: collections.history })
    }
 
    static pageLimit = 20;
@@ -53,12 +56,14 @@ export class UserListClass {
       return obj
    };
    static selectFields = {
-      "quiz": ['title', 'aid', 'description', 'tags', 'image', 'answers', 'questions', 'bookmarks', 'drafted', 'showCorrection']
+      "quiz": ['title', 'aid', 'description', 'tags', 'image', 'answers', 'questions', 'bookmarks', 'drafted', 'showCorrection'],
+      'history': ['title', 'aid', 'qid', 'uid', 'data', 'timestamp']
    }
 
-   static async createClass() {
+   static createClass() {
       const newClass = new UserListClass({
-         quiz: DbClass.getProp('quiz')
+         quiz: DbClass.getProp('quiz'),
+         history: DbClass.getProp('history')
       })
 
 
@@ -168,6 +173,76 @@ export class UserListClass {
 
 
    }
+
+
+
+
+
+
+
+   protected async getUserHistory(
+      params: {
+         uid: string,
+         filters: FilterQuery<DocumentTypes.History>,
+         page: number,
+         sort: { [key: string]: 1 | -1 },
+         select: { [key: string]: 1 }
+      }
+   ) {
+
+      const result = await this.collections.history
+         .find({ uid: params.uid, ...params.filters })
+         .select(params.select)
+         .sort({ createdAt: -1 })
+         .limit(UserListClass.pageLimit)
+         .skip(UserListClass.getMore(params.page))
+
+      const count = await this.collections.history.countDocuments({ uid: params.uid, ...params.filters })
+
+
+
+      return {
+
+         data: result,
+         count: count,
+         page: params.page,
+         maxPageCount: UserListClass.pageLimit,
+         pageCount: result.length
+
+      }
+
+
+   }
+
+
+
+
+
+
+   public async getHistory(uid: string, page: number = 1) {
+
+
+      const result = await this.getUserHistory({
+
+         uid: uid,
+         filters: {},
+         page: page,
+         select: UserListClass.getSelects(UserListClass.selectFields.history),
+         sort: { createdAt: -1 }
+
+
+      })
+
+
+
+      return result
+   }
+
+
+
+
+
+
 
 
 

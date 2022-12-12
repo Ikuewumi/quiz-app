@@ -2,6 +2,7 @@ import { Router, Response } from "express"
 import { Et } from "../../config/types.js"
 import { Ef } from "../../config/index.js"
 import { UserListClass } from "../../classes/Admin.js"
+import { verify } from "../../middleware/auth.js"
 
 const r = Router()
 
@@ -61,6 +62,37 @@ r.get('/quizzes', async (req: Et.Req, res: Et.Res) => {
 
 
 })
+
+
+
+
+
+
+
+
+
+
+r.get('/history', verify, async (req: Et.Req, res: Et.Res) => {
+
+
+   try {
+      let A = UserListClass.createClass()
+      let pageNum = Number(Ef.query(req, 'page'))
+      pageNum = (pageNum <= 1) ? 1 : pageNum
+      const r = await A.getHistory(req?.userDoc?.id!, pageNum)
+      A = null as unknown as UserListClass
+      return Ef.obj(res, r, 200)
+   }
+   catch (e) {
+      return Ef.msg(res, e ?? `Something went wrong`, 502)
+   }
+
+
+
+})
+
+
+
 
 
 

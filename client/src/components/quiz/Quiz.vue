@@ -120,7 +120,10 @@ const submitQuiz = () => {
 
 
 onMounted(() => startQuiz())
-onBeforeUnmount(() => LogicClass.removeListeners())
+onBeforeUnmount(() => {
+   LogicClass.removeListeners()
+   LogicClass = null as unknown as ClientQuiz
+})
 
 </script>
 
@@ -131,6 +134,7 @@ div[data-c-quiz] {
    display: grid;
    gap: 0.3em;
    --sidebar-width: 250px;
+   background: #fff;
 
    &#quiz-page {
       grid-column: 1/ -1;

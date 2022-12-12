@@ -8,9 +8,9 @@
 
             <nav class="dis-flex weight-mid f-long a-center g-4">
                <RouterLink to="/">home</RouterLink>
-               <RouterLink to="/quiz" style="--c: #C678E0">quizzes</RouterLink>
+               <RouterLink to="/auth" style="--c: #C678E0">quizzes</RouterLink>
                <RouterLink to="/dev" style="--c: #7E9D43">about</RouterLink>
-               <RouterLink to="/quiz" style="--c: #E76A43">you</RouterLink>
+               <RouterLink to="/auth" style="--c: #E76A43">you</RouterLink>
             </nav>
 
 

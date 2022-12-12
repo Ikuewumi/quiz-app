@@ -10,6 +10,8 @@ export namespace DocumentTypes {
       token: string
    }
 
+   export interface History extends Types.TimeData, HistoryTypes.History { }
+
    export interface Test extends Types.TimeData {
       name: string
    }
@@ -197,8 +199,43 @@ export namespace QuizTypes {
 
 
 
+   export interface ScoreData {
+
+      score: number,
+      total: number
+   }
+
+   export interface MarkedQuiz {
+      scoreData: ScoreData,
+      quizDoc: DocumentTypes.Quiz
+   }
+
 
 }
+
+
+
+
+
+export namespace HistoryTypes {
+
+
+
+
+   export interface History {
+      aid: string
+      qid: string
+      data: QuizTypes.ScoreData
+      title: string
+      timestamp: number,
+      uid: string
+   }
+
+
+
+}
+
+
 
 
 export namespace ApiTypes {

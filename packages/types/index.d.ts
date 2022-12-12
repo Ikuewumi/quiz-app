@@ -28,13 +28,23 @@ export declare namespace DocumentTypes {
     }
 }
 export declare namespace UserTypes {
-    interface UserMetadata {
+    interface UserMetadata extends Types.TimeData {
         name: string;
         email: string;
         admin: boolean;
         description: string;
         image: string;
         bookmarks: Array<string>;
+    }
+    interface ClientUserMetadata {
+        name: string;
+        email: string;
+        admin: boolean;
+        description: string;
+        image: string;
+        bookmarks: Array<string>;
+        _id: string;
+        id: string;
     }
 }
 export declare namespace MessageTypes {
@@ -140,6 +150,14 @@ export declare namespace QuizTypes {
     interface ClientAnswer {
         qid: string;
         data: Answer[];
+    }
+    interface ScoreData {
+        score: number;
+        total: number;
+    }
+    interface MarkedQuiz {
+        scoreData: ScoreData;
+        quizDoc: DocumentTypes.Quiz;
     }
 }
 export declare namespace ApiTypes {

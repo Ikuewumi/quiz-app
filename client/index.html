@@ -7,11 +7,82 @@
     <title>Vite + Vue + TS</title>
    </head>
    <body>
+      <!-- First loader -->
+      
+      <style>
+         [data-c-loader] {
+  --anim-time: 1.3s;
+  z-index: 10;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  inset: 0 auto auto 0;
+  display: grid;
+  place-content: center;
+  place-items: center;
+  background: var(--bg, rgba(255, 255, 255, 0.97));
+}
+[data-c-loader] img,
+[data-c-loader] svg,
+[data-c-loader] figure {
+  width: var(--w-img, min(200px, 40vw));
+  filter: blur(0.5px);
+  animation: loader-opacity var(--anim-time) ease-out infinite alternate;
+}
+[data-c-loader] span.loader {
+  width: var(--w-loader, min(350px, 80vw));
+  height: var(--h-loader, 7px);
+  background: var(--bg-loader, rgba(128, 122, 122, 0.09));
+  border-radius: var(--br-loader, 2vmax);
+  overflow-x: hidden;
+  position: relative;
+}
+[data-c-loader] span.loader::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  left: 0;
+  width: 30%;
+  background: var(--clr-loader, rgba(108, 153, 174, 0.2509803922));
+  border-radius: var(--br-loader, 2vmax);
+  transform: translateX(0);
+  animation: move-loader var(--anim-time) ease-out infinite alternate;
+}
+@keyframes move-loader {
+from {
+    transform: translateX(-100%);
+}
+to {
+    transform: translateX(var(--w-loader, min(350px, 80vw)));
+}
+}
+@keyframes loader-opacity {
+from {
+    opacity: 0.3;
+}
+to {
+    opacity: 1;
+}
+}
+      </style>
+
+
+
+
+
       <div id="app"></div>
       <div id="modals">
          <modal-component></modal-component>
          <toast-component time="4000"></toast-component>
          
+      </div>
+      <div data-c-loader id="starting-modal" v-if="loader.msg">
+         <svg viewBox="0 0 605.46608 508.2661">
+            <use href="#loader_question_svg"></use>
+         </svg>
+         <span class="loader"></span>
       </div>
       <div id="svgs" aria-hidden="true" hidden style="display: none;">
          <svg>
@@ -115,5 +186,11 @@
       <script type="module" src="./src/lit/ToastComponent.ts"></script>
       <script type="module" src="./src/lit/ButtonComponent.ts"></script>
       <script type="module" src="./src/lit/HeaderText.ts"></script>
+
+
+
+
+
+
   </body>
 </html>

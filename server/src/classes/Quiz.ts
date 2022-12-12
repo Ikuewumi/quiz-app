@@ -357,7 +357,6 @@ export class Quiz {
       let quizScores = {
          score: 0,
          total: answersDoc.data.length,
-         quizDoc
       }
 
       userAnswers.data.forEach((ans_) => {
@@ -365,7 +364,10 @@ export class Quiz {
          quizScores.score = isCorrect === true ? quizScores.score += 1 : quizScores.score
       })
 
-      return quizScores
+      return {
+         scoreData: quizScores,
+         quizDoc
+      }
 
    }
 

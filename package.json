@@ -6,11 +6,13 @@
    "scripts": {
       "ins:dev": "pnpm install --offline",
       "ins:prod": "pnpm install",
-      "start": "node server/dist/index.js",
-      "test": "turbo run test",
-      "dev": "turbo run dev",
-      "build": "turbo run build",
-      "watch": "turbo run watch"
+      "start": "node server/dist/app.js",
+      "tb:s": "cd server && pnpm build && cd .. && pnpm start",
+      "d:s": "pnpm --filter server dev",
+      "d:c": "pnpm --filter client dev",
+      "t:s": "pnpm --filter server test",
+      "t:c": "pnpm --filter client test",
+      "b": "pnpm build -r"
    },
    "keywords": [
       "fullstack",

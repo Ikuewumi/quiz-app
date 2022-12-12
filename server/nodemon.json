@@ -3,11 +3,12 @@
    "ignore": [
       ".git",
       "node_modules/**/node_modules",
-      "test"
+      "test",
+      "dist"
    ],
    "verbose": true,
    "execMap": {
-      "ts": "ts-node --esm"
+      "ts": "ts-node --esm --transpiler esbuild"
    },
    "ext": "ts, graphql"
 }

@@ -13,16 +13,13 @@ const genOption = (a: Option) => {
 
 }
 
+const genHTTextOption = (a: Option) => `<span class="option ${a?.on ? 'on' : ''}">${a.option}</span>`
+
 
 @customElement('quiz-options')
 export class QuizOptions extends LitElement {
 
-   @property({
-      hasChanged: (val: Option[]) => {
-         const isValid = val.reduce((acc, curr) => (acc && ('option' in curr) && (typeof curr?.option === 'string') && (curr?.option > '')), true)
-         return isValid
-      }
-   })
+   @property()
    options?: Option[] = [
       { option: 'A  world of my making', on: true },
       { option: 'Good Life!' },
@@ -30,30 +27,33 @@ export class QuizOptions extends LitElement {
       { option: 'A nice necromancer' }
    ]
 
-   /**
-    * The number of times the button has been clicked.
-    */
-   @property({ type: Number })
-   count = 0
 
    render() {
       return html`
          <article class="options" role="menu">
-            ${this.options?.map(option => genOption(option))}
          </article>
       `
    }
 
-   protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+   // protected update(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+   //    // htmlText = 
+   //    // super.update()
+
+   // }
+
+   protected updated() {
+      let htmlText = ``
+      this.options?.map(option => htmlText += genHTTextOption(option))
+      const article = this.shadowRoot?.querySelector('article[role=menu].options')!
+      article.innerHTML = htmlText
+
       const options = Array.from(this.shadowRoot?.querySelectorAll('span.option')!) as HTMLSpanElement[]
       options.forEach(option => option.addEventListener('click', _ => {
          const chosenOption = this.options?.find(o => option.textContent === o.option)
-         const event = new CustomEvent('optionClick', {
-            detail: { option: chosenOption?.option },
-            bubbles: true
-         })
+         const event = new CustomEvent('optionClick', { detail: { option: chosenOption?.option }, bubbles: true })
          this.dispatchEvent(event)
       }))
+
    }
 
    disconnectedCallback(): void {

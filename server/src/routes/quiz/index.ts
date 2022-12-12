@@ -7,6 +7,7 @@ import { DbClass } from "../../config/db.js"
 import { QuizTypes, DocumentTypes } from "types"
 import { str } from "helpers"
 import { AuthClass } from "../../app.js"
+import { UserListClass } from "../../classes/Admin.js"
 
 const r = Router()
 
@@ -140,8 +141,21 @@ r.post('/mark/:id', async (req: Et.Req, res: Et.Res) => {
    try {
       const payload = Quiz.checkAnswers(req?.body ?? {})
       let Q = Quiz.genClass(DbClass)
+      let A = UserListClass.createClass()
+
       const result = await Q.markQuiz(payload)
+      const r2 = await A.saveHistory({
+         "data": result.scoreData,
+         "title": result.quizDoc.title,
+         "aid": result.quizDoc.aid,
+         "qid": result.quizDoc._id,
+         "uid": req?.userDoc?.id!
+      })
+
+
       Q = null as unknown as Quiz
+      A = null as unknown as UserListClass
+
 
 
       return Ef.obj(res, result, 200)

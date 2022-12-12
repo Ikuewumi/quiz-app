@@ -20,27 +20,29 @@
 
       </Modal>
       <QuizComponent @submitAnswers="submitFunc" :data="quizDataDoc" :startQuiz="booleans.quiz" v-if="booleans.quiz" />
+      <PostQuizComponent :data="markedQuizData" v-if="booleans.postquiz" @to-metadata="navigate('metadata')" />
    </div>
 
 </template>
 
 <script setup lang="ts">
 import { onMounted, watch, defineAsyncComponent } from 'vue';
-import { ClientQuiz, QuizData } from "../../composables/quizClass"
+import type { QuizData } from "../../composables/quizClass"
 import { apiGet, apiPost, apiPut } from '../../composables/auth';
 import Metadata from "../../components/quiz/Metadata.vue"
 import Dialog from '../../components/utitlities/Dialog.vue';
 import Modal from "../../components/utitlities/Modal.vue"
 import { useRoute, useRouter } from 'vue-router';
 import { DocumentTypes, QuizTypes, UserTypes } from 'types';
-import { createToastPromise, useToast } from '../../composables';
+import { createToastPromise, useToast, sleep } from '../../composables';
 import useMode from "../../pinia/mode"
 const QuizComponent = defineAsyncComponent(() => import('../../components/quiz/Quiz.vue'))
-const sleep = (ms = 2000) => { return (new Promise(r => setTimeout(r, ms))) };
+const PostQuizComponent = defineAsyncComponent(() => import('../../components/quiz/PostQuiz.vue'))
 
-let quizDoc = $ref({} as unknown as DocumentTypes.Quiz)
-let authorDoc = $ref({} as unknown as UserTypes.ClientUserMetadata)
+let quizDoc = $ref(null as unknown as DocumentTypes.Quiz)
+let authorDoc = $ref(null as unknown as UserTypes.ClientUserMetadata)
 let quizDataDoc = $ref(null as unknown as QuizData)
+let markedQuizData = $ref(null as unknown as QuizTypes.MarkedQuiz)
 
 const modeInput = $ref('easy')
 const router = useRouter()
@@ -50,11 +52,12 @@ const qid = $computed(() => useRoute().params.id)
 
 const booleans = $ref({
    quiz: false,
-   metadata: false
+   metadata: false,
+   postquiz: false
 } as { [index: string]: boolean })
 
 
-const navigate = (key: "quiz" | "metadata") => {
+const navigate = (key: "quiz" | "metadata" | "postquiz") => {
 
    for (const elem in booleans) { booleans[elem] = (key === elem) }
 
@@ -165,8 +168,11 @@ const submitFunc = (answers: QuizTypes.ClientAnswer) => {
 
    createToastPromise(async () => {
       console.log(answers)
-      const r = await apiPost(`quiz/mark/${answers.qid}`, answers)
-      console.log(r)
+      markedQuizData = await apiPost(`quiz/mark/${answers.qid}`, answers) as QuizTypes.MarkedQuiz
+      console.log(markedQuizData)
+      navigate("postquiz")
+
+
 
    }, 'Submittin quiz', true)()
 

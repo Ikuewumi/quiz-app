@@ -65,3 +65,6 @@ export function createLoadingPromise<T>(msg: string, fn: (...args: any[]) => Pro
 
 }
 
+
+export const sleep = async (ms = 200) => new Promise((res) => setTimeout(res, ms))
+

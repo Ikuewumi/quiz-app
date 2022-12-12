@@ -5,6 +5,7 @@ import { verify } from "../../middleware/auth.js"
 import { AuthClass } from "../../app.js"
 import { z } from "zod"
 import { ZodTypes } from "types"
+import { UserListClass } from "../../classes/Admin.js"
 
 const r = Router()
 
@@ -56,6 +57,10 @@ r.patch('/metadata', async (req: Et.Req, res: Et.Res) => {
       return Ef.msg(res, e ?? `Something went wrong`, 502)
    }
 })
+
+
+
+
 
 
 

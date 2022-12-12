@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { onMounted, watchEffect } from 'vue';
+import { onMounted, watch, watchEffect } from 'vue';
 import Header from './components/constants/Header.vue';
 import Footer from "./components/constants/Footer.vue";
 import Loader from './components/utitlities/Loader.vue';
 import useMode from './pinia/mode'
 import { useRoute } from 'vue-router';
 import { useUser } from './pinia/user';
-import { createToastPromise } from './composables';
+import { createToastPromise, sleep } from './composables';
 import { getRefreshToken } from './composables/env';
+
 const mode = useMode()
 const route = useRoute()
 const user = useUser()
@@ -16,19 +17,33 @@ const fullScreenRoutes = [
    'auth'
 ]
 
-watchEffect(() => {
-   if (fullScreenRoutes.includes(route.name as string)) {
-      mode.hideHeader()
-   } else {
-      mode.showHeader()
-   }
+watch(route, (newVal, oldVal) => {
+   const func = fullScreenRoutes.includes(newVal.name as string) ? mode.hideHeader : mode.showHeader
+   func()
 })
 
 
 onMounted(async () => {
-   if (await getRefreshToken()) {
-      createToastPromise(user.getUserData, 'Getting User Data...', false)()
-   }
+
+   createToastPromise(async () => {
+      try {
+         if (await getRefreshToken()) {
+            await user.getUserData()
+         }
+
+         await sleep(200)
+      }
+      catch (e) {
+         throw Error('could not load user data. Please reload')
+      }
+      finally {
+         document.querySelector('#starting-modal')?.remove()
+
+      }
+
+
+   }, 'Getting User Data...', false)()
+
 })
 
 </script>

@@ -1,7 +1,7 @@
 import { DocumentTypes, QuizTypes, UserTypes } from "types"
-import { useModal, useToast } from "."
+import { sleep, useModal, useToast } from "."
 import { Option, } from "../lit/quiz-options"
-// import { ClientMdLib } from "md"
+import { ClientMdLib } from "md"
 
 interface QuizElements {
    quizPage: HTMLDivElement,
@@ -60,7 +60,7 @@ export class ClientQuiz {
    }
 
    start() {
-      this.data.questionsDoc.data = this.data.questionsDoc.data.map(q => {
+      this.data.questionsDoc.data = this.data.questionsDoc.data.sort((a, b) => Math.random() - 0.5).map(q => {
          return { ...q, options: q.options.sort((a, b) => Math.random() - 0.5) }
       })
       this.elements.quizTimer.time = this.data.time
@@ -80,6 +80,9 @@ export class ClientQuiz {
 
       this.elements.quizTimer.addEventListener('quizTimerStopped', () => {
          this.timeIsRunning = false
+         const submitEvt = new CustomEvent('quiz-submit', { detail: { answers: this.answersArray }, bubbles: true }) as HTMLElementEventMap["quiz-submit"]
+         this.elements.quizQuestion.dispatchEvent(submitEvt)
+         useToast().el.show(`Time is done! Submitting answers`, false)
       })
 
       this.elements.quizNav.addEventListener('navTabbed', (e: any) => {
@@ -95,8 +98,10 @@ export class ClientQuiz {
          this.promptSubmitQuiz()
       })
 
-      this.elements.quizOptions.addEventListener('optionClick', (e: any) => {
+      this.elements.quizOptions.addEventListener('optionClick', async (e: any) => {
          this.chooseAnswer(e?.detail?.option as string)
+         await sleep(200)
+         this.toNextQuestion()
       })
    }
 
@@ -111,6 +116,7 @@ export class ClientQuiz {
       this.elements.quizMiniNav.removeEventListener('miniNavSubmit', _ => { })
       this.elements.quizOptions.removeEventListener('optionClick', _ => { })
       this.elements.quizPage.removeEventListener('quiz-submit', _ => { })
+      this.elements.quizTimer.shutdown()
 
 
 
@@ -198,7 +204,6 @@ export class ClientQuiz {
    async fillQuestion() {
       let slotMarkup = ``
       if (this.currentQuestion.info! > '') {
-         const { ClientMdLib } = await import("md")
          const md = await ClientMdLib.mdToHtml(this.currentQuestion.info!)
          slotMarkup += md
       }

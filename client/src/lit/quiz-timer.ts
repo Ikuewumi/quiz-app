@@ -70,6 +70,15 @@ export class QuizTimer extends LitElement {
       this.shadowRoot?.querySelector('time')?.classList.add('done')
    }
 
+   shutdown() {
+      let completed = this._time === 0
+      clearInterval(this._timeInterval)
+      this._isRunning = false
+      this._timeInterval = 0
+      this.shadowRoot?.querySelector('time')?.classList.remove(...['yellow', 'red'])
+      this.shadowRoot?.querySelector('time')?.classList.add('done')
+   }
+
    private _checkStatus(t: number) {
       const percent = (this._time! / t) * 100
       let cssClass = ''
