@@ -4,9 +4,19 @@ import { apiPost } from "./auth"
 // export const api = 'http://localhost:5000'
 export const api = window.location.origin.startsWith('http://localhost:') ? 'http://localhost:5000' : window.location.origin
 
+
+
 export const tokenName = 'quizAppIkAccess'
 const refreshToken = 'quizAppIkRefresh'
 const accessExpiryDate = 'quizAppIkAccessExpiryToken'
+
+
+
+export function clearTokens() {
+   setToken('')
+   setRefreshToken('')
+}
+
 
 export async function getToken() {
    let exp: string | number | null = getAccessExpiryDate()

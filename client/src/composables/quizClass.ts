@@ -24,7 +24,7 @@ export interface QuizData {
    time: number,
    mode: QuizTypes.Mode,
    questionsDoc: DocumentTypes.Question,
-   quizDoc: DocumentTypes.Quiz,
+   quizDoc: QuizTypes.QuizMetadata,
    userDoc: UserTypes.ClientUserMetadata
 
 }
@@ -170,17 +170,10 @@ export class ClientQuiz {
 
    get answersArray() {
 
-      const answers = {
-         qid: this.data.quizDoc._id as string,
-         data: [] as QuizTypes.Answer[]
-      }
+      const answers = [] as QuizTypes.Answer[]
 
       this.answers.forEach(a => {
-         answers.data.push({
-            answer: a.answer,
-            sid: a.sid,
-            qid: answers.qid
-         })
+         answers.push({ answer: a.answer, sid: a.sid })
       })
 
       return answers
@@ -189,7 +182,6 @@ export class ClientQuiz {
 
 
    async syncCurrentQuestion() {
-      // console.log(ClientMdLib)
 
       this.elements.quizNav.tab(this.index + 1)
       this.elements.quizNumber.tab(this.index + 1)
@@ -257,10 +249,7 @@ export { }
 
 interface QuizSubmitEvent extends Event {
    detail: {
-      answers: {
-         data: QuizTypes.Answer[],
-         qid: string
-      }
+      answers: QuizTypes.Answer[]
    },
    bubbles: boolean
 }

@@ -1,8 +1,9 @@
 <template>
    <div data-p data-p-home class="sgrid even-cols">
-      <quiz-hero header="lorem" about="lorem ipsum" linkName="continue" :link="heroLink"></quiz-hero>
-      <div data-f-quiz-card-list v-if="quizzes">
-         <QuizCard v-for="(quiz, i) in quizzes.data" :key="i" :data="quiz!" />
+      <quiz-hero :header="heroContent.header" :about="heroContent.content" :linkName="heroContent.linkContent"
+         :link="heroContent.link"></quiz-hero>
+      <div data-f-quiz-card-list v-if="pHome.state.data.length">
+         <QuizCard v-for="(quiz, i) in pHome.state.data as DocumentTypes.Quiz[]" :key="i" :data="quiz!" />
       </div>
    </div>
 </template>
@@ -11,19 +12,40 @@
 import { defineAsyncComponent, onBeforeUnmount, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiTypes, DocumentTypes } from "types"
-import { createToastPromise } from '../../composables';
+import { createToastPromise, title } from '../../composables';
 import { apiGet } from '../../composables/auth';
+import { paginate } from '../../composables/pagination';
+import { useUser } from '../../pinia/user';
 
 const QuizCard = defineAsyncComponent(() => import('../../components/quiz/QuizCard.vue'))
 const router = useRouter()
-//TODO chage b4 prod.
-const heroLink = $ref('/user')
-let quizzes = $ref(null as unknown as ApiTypes.PaginatedData<DocumentTypes.Quiz>)
+const user = useUser()
 
+
+
+
+const heroContent = $computed(() => {
+
+   const normalObject = {
+      'header': 'Let\'s Quiz',
+      'content': 'Sign up to start up',
+      'link': '/auth',
+      'linkContent': 'get started'
+   }
+
+   if (user._id) {
+      normalObject['content'] = `Welcome back, ${user.name}`
+      normalObject['link'] = '/you'
+      normalObject['linkContent'] = 'to user page'
+   }
+
+   return normalObject
+
+})
 
 
 const quizHeroM = {
-   addListener() { this.el.addEventListener('btnClick', _ => { router.push(heroLink) }) },
+   addListener() { this.el.addEventListener('btnClick', _ => { router.push(heroContent.link) }) },
    removeListener() { this.el.removeEventListener('btnClick', _ => { }) },
 
    get el() {
@@ -33,23 +55,20 @@ const quizHeroM = {
 
 
 
-const getQuizzes = async () => {
-   createToastPromise(async () => {
-
-      const r = await apiGet(`lists/home?page=1`)
-      quizzes = r as ApiTypes.PaginatedData<DocumentTypes.Quiz>
-      console.log(r)
-
-
-   }, 'Loading Quizzes', true)()
-}
+const pHome = paginate('lists/home?', 20, false)
 
 
 
 
 onMounted(() => {
    quizHeroM.addListener()
-   getQuizzes()
+   title('Home Page')
+
+   createToastPromise(async () => {
+
+      await pHome.value.start()
+
+   }, 'Loading Quizzes', true)()
 })
 
 

@@ -51,14 +51,26 @@ const routes: RouteRecordRaw[] = [
 
    {
       name: "dev",
-      path: "/dev",
+      path: '/:catchAll(.*)',
       component: () => import('../views/dev/Playground.vue')
    },
 
    {
+      name: "quizzes",
+      path: "/quizzes",
+      component: () => import('../views/main/Quizzes.vue')
+   },
+
+   {
       name: "user",
-      path: "/user",
+      path: "/user/:id",
       component: () => import('../views/user/User.vue')
+   },
+
+   {
+      name: "you",
+      path: "/you",
+      component: () => import('../views/user/You.vue')
    }
 ]
 
@@ -70,7 +82,8 @@ const router = createRouter({
    }
 })
 
-const normieRoutes = ['home', 'auth']
+//TODO remove create route when done fixing it
+const normieRoutes = ['home', 'auth', 'dev', 'quizzes']
 
 
 router.beforeEach(async (to, from) => {

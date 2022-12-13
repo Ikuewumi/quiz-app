@@ -8,7 +8,6 @@ export class ModalComponent extends LitElement {
    updated() {
       const section = this.shadowRoot?.querySelector('section.modal')! as HTMLDivElement
       section.onclick = (e) => {
-         console.log(e.AT_TARGET)
          if (e.target === section) this.hide()
       }
    }

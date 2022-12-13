@@ -1,6 +1,7 @@
 <template>
    <div data-p data-p-user class="sgrid even-cols">
-      <Metadata :user="userData.$state" @to-admin="metadataM.toAdminPage" @edit-profile="metadataM.showUpdateModal" />
+      <Metadata :showEdit="true" :user="userData.$state" @to-admin="metadataM.toAdminPage"
+         @edit-profile="metadataM.showUpdateModal" />
 
       <section data-f-container>
          <div data-f>
@@ -22,44 +23,34 @@
 
 
 
-      <section data-f-container>
+      <section data-f-container v-if="draftedQuizzes.state.data.length">
          <div data-f>
-            <h3>Drafts</h3>
-            <p>Here you can edit your quiz drafts</p>
+            <h3>Draft</h3>
+            <p>Here you can see and edit your drafts</p>
          </div>
-
-
-
-         <div data-f-quiz-card-list v-if="drafts.data.length">
-
-            <QuizCard v-for="(draft, i) in drafts.data" :key="i" :data="draft" />
-
-
-
+         <div class="dis-grid g-6">
+            <div data-f-quiz-card-list>
+               <QuizCard v-for=" (quiz, i) in (draftedQuizzes.state.data as DocumentTypes.Quiz[])" :key="i"
+                  :data="quiz" />
+            </div>
+            <PaginationBar :showMore="draftedQuizzes.computedShouldShowMore" :text="draftedQuizzes.computedText"
+               @show-more="draftedQuizzes.promiseNextPage" />
          </div>
-
-         <ErrorComponent v-else msg="No Quizzes Present" />
-
       </section>
 
-
-      <section data-f-container>
+      <section data-f-container v-if="publishedQuizzes.state.data.length">
          <div data-f>
             <h3>Published</h3>
-            <p>Here you can see and take your published quizes</p>
+            <p>Here you can see and take your published quizzes</p>
          </div>
-
-
-
-         <div data-f-quiz-card-list v-if="quizzes.data.length">
-
-            <QuizCard v-for="(quiz, i) in quizzes.data" :key="i" :data="quiz" />
-
-
-
+         <div class="dis-grid g-6">
+            <div data-f-quiz-card-list>
+               <QuizCard v-for=" (quiz, i) in (publishedQuizzes.state.data as DocumentTypes.Quiz[])" :key="i"
+                  :data="quiz" />
+            </div>
+            <PaginationBar :showMore="publishedQuizzes.computedShouldShowMore" :text="publishedQuizzes.computedText"
+               @showMore="publishedQuizzes.promiseNextPage" />
          </div>
-
-         <ErrorComponent v-else msg="No Quizzes Present" />
       </section>
 
 
@@ -86,7 +77,7 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted } from 'vue';
-import { createToastPromise, useToast } from '../../composables';
+import { createToastPromise, title, useToast } from '../../composables';
 import { useUser } from '../../pinia/user';
 import Metadata from '../../components/user/Metadata.vue';
 import Modal from '../../components/utitlities/Modal.vue';
@@ -94,8 +85,11 @@ import { apiGet } from '../../composables/auth';
 import { ApiTypes, DocumentTypes } from 'types';
 import { RouterLink } from "vue-router";
 import ErrorComponent from '../../components/utitlities/ErrorComponent.vue';
-let UpdateMetadata = defineAsyncComponent(() => import('../../components/user/UpdateMetadata.vue'))
-let QuizCard = defineAsyncComponent(() => import('../../components/quiz/QuizCard.vue'))
+import { paginate } from '../../composables/pagination';
+
+const PaginationBar = defineAsyncComponent(() => import('../../components/utitlities/PaginationBar.vue'))
+const UpdateMetadata = defineAsyncComponent(() => import('../../components/user/UpdateMetadata.vue'))
+const QuizCard = defineAsyncComponent(() => import('../../components/quiz/QuizCard.vue'))
 
 const userData = useUser()
 
@@ -114,6 +108,9 @@ let quizzes = $ref({
    maxPageCount: 0,
    pageCount: 0
 } as ApiTypes.PaginatedData<DocumentTypes.Quiz>)
+
+let publishedQuizzes = paginate(`admin/quizzes?`, 20, true)
+let draftedQuizzes = paginate(`admin/drafts?`, 20, true)
 
 
 
@@ -160,6 +157,7 @@ const metadataM = {
 onMounted(() => {
 
    createToastPromise(async () => {
+      title('Admin Page')
       await userData.getUserData()
 
 
@@ -168,8 +166,10 @@ onMounted(() => {
       drafts = r
       quizzes = r2
 
+      await publishedQuizzes.value.start()
+      await draftedQuizzes.value.start()
 
-      console.log(r, r2)
+
 
 
 

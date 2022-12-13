@@ -146,6 +146,7 @@ div[data-c-history-card] {
       justify-items: start;
       padding-left: 15px;
       padding-right: 0;
+      overflow: hidden;
 
 
       @media (max-width: 450px) {
@@ -208,7 +209,7 @@ div[data-c-history-card] {
 }
 
 
-[data-f-quiz-card-list] {
+[data-f-history-card-list] {
 
    width: 100%;
    display: grid;

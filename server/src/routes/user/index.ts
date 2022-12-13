@@ -4,12 +4,19 @@ import { Ef } from "../../config/index.js"
 import { verify } from "../../middleware/auth.js"
 import { AuthClass } from "../../app.js"
 import { z } from "zod"
-import { ZodTypes } from "types"
 import { UserListClass } from "../../classes/Admin.js"
 
 const r = Router()
 
-r.use(verify)
+namespace ZodTypes {
+
+   export const zUserMetadata = z.object({
+      name: z.string().min(1),
+      description: z.string().min(0),
+      image: z.string()
+   })
+
+}
 
 r.get('/metadata/:id', async (req: Et.Req, res: Et.Res) => {
    try {
@@ -24,6 +31,10 @@ r.get('/metadata/:id', async (req: Et.Req, res: Et.Res) => {
       return Ef.msg(res, e ?? `Something went wrong`, 502)
    }
 })
+
+r.use(verify)
+
+
 
 
 r.get('/metadata', async (req: Et.Req, res: Et.Res) => {

@@ -7,7 +7,7 @@
       <p>{{ props.user.email }}</p>
       <p class="description" v-if="props.user.description">{{ props.user.description }}</p>
       <small data-text-admin @click="emit('toAdmin')" v-if="props.user.admin">Admin</small>
-      <small data-text-edit @click="emit('editProfile')">
+      <small data-text-edit @click="emit('editProfile')" v-if="props.showEdit">
          <svg viewBox="0 0 26 26">
             <use href="#edit_metro"></use>
          </svg>
@@ -21,7 +21,8 @@
 import { UserTypes } from 'types';
 
 const props = defineProps<{
-   user: UserTypes.UserMetadata
+   user: UserTypes.UserMetadata,
+   showEdit: Boolean
 }>()
 
 const emit = defineEmits<{

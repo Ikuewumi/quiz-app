@@ -15,6 +15,8 @@ export class Tag {
       return newClass
    }
 
+   static myTags = ['medicine', 'engineering', 'history', 'computing', 'social sciencies', 'arts']
+
    async createTagDoc() {
 
       let t: string[] = []
@@ -37,10 +39,9 @@ export class Tag {
       const rTags = zTag.parse(removeTags).map(tag => tag.toLowerCase())
       const tags = zTag.parse(newTags).map(tag => tag.toLowerCase())
       let oldTags = await this.createTagDoc()
+      // oldTags = [...oldTags.filter(t => !tags.includes(t)), ...tags]
 
-      oldTags = [...oldTags.filter(t => !tags.includes(t)).filter(t => !rTags.includes(t)), ...tags]
-
-      return this.collections.tag.updateOne({}, { $set: { tags: oldTags } })
+      // return this.collections.tag.updateOne({}, { $set: { tags: oldTags } })
 
    }
 

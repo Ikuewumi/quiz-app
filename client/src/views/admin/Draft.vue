@@ -13,8 +13,7 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted } from 'vue';
-import { clientQuizMock_ } from '../../composables/_mock';
-import { ClientQuiz } from "../../composables/quizClass"
+import { title } from "../../composables"
 import { apiDelete, apiGet } from '../../composables/auth';
 import Metadata from "../../components/quiz/Metadata.vue"
 import { useRoute, useRouter } from 'vue-router';
@@ -74,9 +73,7 @@ const metadataM = $ref({
 
    async delete() {
       createToastPromise(async () => {
-         console.log(qid)
          const result = await apiDelete(`quiz/${qid}`)
-         console.log(result)
          useToast().el.show(result.message, false)
 
          await router.push('/admin')
@@ -90,9 +87,7 @@ const metadataM = $ref({
 
 
       createToastPromise(async () => {
-         console.log(qid)
          const result = await apiPut(`quiz/drafts/${qid}`, { draft: false })
-         console.log(result)
          useToast().el.show(result.message, false)
          await router.push(`/quiz/${qid}`)
 
@@ -118,15 +113,12 @@ const metadataM = $ref({
 
 onMounted(async () => {
 
-   console.log(qid)
-
-
    createToastPromise(async () => {
       const quizMetadata_ = await apiGet(`quiz/metadata/${qid}?draft=true`, true)
       quizMetadata = quizMetadata_.quizDoc as DocumentTypes.Quiz
+      title(`Drafts - ${quizMetadata.title}`)
       authorDoc = quizMetadata_.authorDoc as UserTypes.ClientUserMetadata
       navigate("metadata")
-      console.log(quizMetadata_)
 
    }, 'Loading Draft Data...', true)()
 

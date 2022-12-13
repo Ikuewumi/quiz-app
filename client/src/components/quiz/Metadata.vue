@@ -5,23 +5,19 @@
       </div>
       <main>
          <strong role="heading">{{ props.data.title }}</strong>
-         <cite>By {{ props.author.name }}</cite>
+         <cite>By <RouterLink :to="`/user/${props.data.aid}`">{{ props.author.name }}</RouterLink></cite>
 
          <p>
             {{ props.data.description }}
          </p>
 
          <figure>
-            <span data-tag v-for="(tag, i) in props.data.tags">{{ tag }}</span>
-         </figure>
-
-         <figure>
-            <span data-f-tag>
+            <span data-tag class="mt-1">
                <svg viewBox="0 0 26 26">
-                  <use href="#bookmark_metro"></use>
+                  <use href="#hashtag_metro"></use>
                </svg>
                <span>
-                  {{ props.data.bookmarks }}
+                  {{ props.data.tags[0] }}
                </span>
             </span>
          </figure>
@@ -142,21 +138,35 @@ const user = useUser()
 
    [data-tag] {
       @include card;
+      display: grid;
+      grid-auto-flow: column;
+      width: fit-content;
+      place-items: center;
+      cursor: pointer;
+      gap: var(--size-1);
+
       --bg: #fff;
       --bg-h: #fff;
       --br: 0.4vmax;
       --border-w: 0;
       --border-w-h: 0;
-      --size: 13px;
+      --size: 12px;
       --f-sans: 'Urbanist';
       cursor: pointer;
       letter-spacing: 0.5px;
-      box-shadow: 0px 0 1px 1px rgb(0 0 0 / 0.03);
+      box-shadow: 0px 0 1px 1px rgb(0 0 0 / 0.08);
 
       &:hover {
-         box-shadow: 0px 0 1px 1px rgb(0 0 0 / 0.07);
+         box-shadow: 0px 0 1px 1px rgb(0 0 0 / 0.1);
+      }
+
+      svg {
+         @include mSvg;
+         --w: 10px;
+         --f: #555;
       }
    }
+
 
 
    [data-f-tag] {
@@ -253,7 +263,7 @@ const user = useUser()
          flex-basis: fit-content;
          display: flex;
          place-items: center;
-         gap: var(--size-1);
+         gap: var(--size-2);
          --size: clamp(13px, 13px + 3vw, 15px);
          letter-spacing: 1px;
          --pin: 0.8rem;
@@ -304,7 +314,18 @@ const user = useUser()
       font-size: var(--size-cite, clamp(0.8rem, 0.8rem + 2vw, 0.9rem));
       font-family: var(--f-cite, 'Urbanist');
       font-weight: var(--weight-cite, 900);
-      color: var(--clr-cite, #999)
+      color: var(--clr-cite, #999);
+
+      a {
+         color: var(--clr-cite, #999);
+         text-decoration: none;
+
+
+         &:hover {
+            color: var(--clr-cite, #555);
+         }
+      }
+
    }
 
 

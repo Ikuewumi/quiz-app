@@ -4,15 +4,16 @@
    "description": "A Simple app to take and create quizzes",
    "main": "index.js",
    "scripts": {
-      "ins:dev": "pnpm install --offline",
-      "ins:prod": "pnpm install",
+      "i:o": "pnpm install --offline -r",
+      "i:prod": "pnpm install -r",
       "start": "node server/dist/app.js",
       "tb:s": "cd server && pnpm build && cd .. && pnpm start",
       "d:s": "pnpm --filter server dev",
       "d:c": "pnpm --filter client dev",
       "t:s": "pnpm --filter server test",
       "t:c": "pnpm --filter client test",
-      "b": "pnpm build -r"
+      "b": "pnpm build -r",
+      "b:p": "pnpm --filter packages build && pnpm --filter packages build:md && pnpm i:o"
    },
    "keywords": [
       "fullstack",

@@ -8,6 +8,7 @@ import { QuizTypes, DocumentTypes } from "types"
 import { str } from "helpers"
 import { AuthClass } from "../../app.js"
 import { UserListClass } from "../../classes/Admin.js"
+import { FilterQuery } from "mongoose"
 
 const r = Router()
 
@@ -21,10 +22,10 @@ r.get('/:id', async (req: Et.Req, res: Et.Res) => {
       const params = req.params
       const mode = (Ef.query(req, 'mode') ?? 'medium') as QuizTypes.Mode
 
-      let Q = Quiz.genClass(DbClass)
+      let Q = Quiz.genClass()
 
-      const result = await Q.getQuiz({ qid: req.params.id ?? '', userDoc: req.userDoc!, drafted: false, mode })
-      const userDoc = await AuthClass.getUser(req?.userDoc?.id!)
+      const result = await Q.quiz(params.id, mode)
+      const userDoc = await AuthClass.getUser(req.userDoc?.id!)
 
       Q = null as unknown as Quiz
 
@@ -43,9 +44,23 @@ r.get('/:id', async (req: Et.Req, res: Et.Res) => {
 
 r.get('/metadata/:id', async (req: Et.Req, res: Et.Res) => {
    try {
-      let Q = Quiz.genClass(DbClass)
-      let metadata = await Q.getMeta(req.params.id!, req.userDoc?.id!, (Ef.query(req, 'draft').toLowerCase() === 'true'))
+      let Q = Quiz.genClass()
+      let isDrafted = (Ef.query(req, 'draft').toLowerCase() === 'true')
+
+      let obj: FilterQuery<DocumentTypes.Quiz> = {}
+      obj['drafted'] = isDrafted
+      if (isDrafted) { obj['aid'] = req.userDoc?.id }
+
+
+      let metadata = await Q.readMetadata(req.params.id!, obj)
       let authorDoc = await AuthClass.getUser(metadata.aid)
+
+
+      if (isDrafted && !!!(authorDoc.admin)) {
+         throw Error('oops!. you cannot view a drafted quiz if you are not the author')
+      }
+
+
       Q = null as unknown as Quiz
       return Ef.obj(
          res, { quizDoc: metadata, authorDoc: authorDoc }, 200
@@ -61,10 +76,10 @@ r.get('/metadata/:id', async (req: Et.Req, res: Et.Res) => {
 
 r.get('/correction/:id', async (req: Et.Req, res: Et.Res) => {
    try {
-      let Q = Quiz.genClass(DbClass)
-      const metadata = await Q.getCorrection(req.params.id!, req.userDoc?.id!)
+      let Q = Quiz.genClass()
+      const correction = await Q.getCorrection(req.params.id!)
       Q = null as unknown as Quiz
-      return Ef.obj(res, metadata, 200)
+      return Ef.obj(res, correction, 200)
    }
    catch (e) {
       return Ef.msg(res, e ?? `Something went wrong`, 502)
@@ -76,14 +91,15 @@ r.get('/correction/:id', async (req: Et.Req, res: Et.Res) => {
 
 
 
-r.put('/drafts/:id', async (req: Et.Req, res: Et.Res) => {
+r.put('/drafts/:id', verifyAdmin, async (req: Et.Req, res: Et.Res) => {
    try {
       const draft = req?.body?.draft ?? true
-      let Q = Quiz.genClass(DbClass)
-      const result = await Q.changeDrafted(req.params.id!, req.userDoc?.id!, draft)
-      const authorDoc = await AuthClass.getUser(req.userDoc?.id!)
+
+      let Q = Quiz.genClass()
+      const result = await Q.changeDraftStatus(req.params.id!, req.userDoc?.id!, draft)
       Q = null as unknown as Quiz
-      return Ef.msg(res, `Quiz has been updated`, 200)
+
+      return Ef.msg(res, result, 200)
    }
    catch (e) {
       return Ef.msg(res, e ?? `Something went wrong`, 502)
@@ -91,16 +107,11 @@ r.put('/drafts/:id', async (req: Et.Req, res: Et.Res) => {
 })
 
 
-r.get('/drafts/:id', async (req: Et.Req, res: Et.Res) => {
+r.get('/drafts/:id', verifyAdmin, async (req: Et.Req, res: Et.Res) => {
    try {
-      let Q = Quiz.genClass(DbClass)
+      let Q = Quiz.genClass()
 
-      const result = await Q.getQuiz({
-         qid: req.params.id ?? '',
-         userDoc: req.userDoc!,
-         drafted: true
-      })
-
+      const result = await Q.adminRead(req.params.id!, req.userDoc!)
       const authorDoc = await AuthClass.getUser(req.userDoc?.id!)
 
 
@@ -123,32 +134,31 @@ r.get('/drafts/:id', async (req: Et.Req, res: Et.Res) => {
 //create operation
 r.post('/create', verifyAdmin, async (req: Et.Req, res: Et.Res) => {
    try {
-      const payload = Quiz.checkQuizTypings(req?.body ?? {})
-      let Q = Quiz.genClass(DbClass)
-      const result = await Q.save(req.userDoc?.id!, payload.metadata, payload.questions)
+      let Q = Quiz.genClass()
+      const result = await Q.create(req.body, req.userDoc?.id!)
       Q = null as unknown as Quiz
 
 
-      console.log(result)
       return Ef.obj(res, result, 200)
    }
-   catch (e) { return Ef.msg(res, e ?? `Something went wrong`, 502) }
+   catch (e) {
+      return Ef.msg(res, e ?? `Something went wrong`, 502)
+   }
 })
 
 
 
 r.post('/mark/:id', async (req: Et.Req, res: Et.Res) => {
    try {
-      const payload = Quiz.checkAnswers(req?.body ?? {})
-      let Q = Quiz.genClass(DbClass)
+      let Q = Quiz.genClass()
       let A = UserListClass.createClass()
 
-      const result = await Q.markQuiz(payload)
-      const r2 = await A.saveHistory({
+      const result = await Q.mark(req.params.id!, req.body)
+      await A.saveHistory({
          "data": result.scoreData,
          "title": result.quizDoc.title,
          "aid": result.quizDoc.aid,
-         "qid": result.quizDoc._id,
+         "qid": result.quizDoc?._id!,
          "uid": req?.userDoc?.id!
       })
 
@@ -171,34 +181,15 @@ r.post('/mark/:id', async (req: Et.Req, res: Et.Res) => {
 
 
 //update operations
-//actually update a quiz
 r.put('/update/:id', verifyAdmin, async (req: Et.Req, res: Et.Res) => {
    try {
-      const payload = Quiz.checkQuizTypings(req?.body ?? {})
-      let Q = Quiz.genClass(DbClass)
-      const result = await Q.update(req.params?.id ?? '', req.userDoc?.id!, payload)
+      let Q = Quiz.genClass()
+      const result = await Q.update(req.body, req.userDoc?.id!, req.params?.id!,)
       Q = null as unknown as Quiz
 
-
-      console.log(result)
-      return Ef.msg(res, `The quiz has been successfully updated`, 200)
+      return Ef.msg(res, result, 200)
    }
    catch (e) { return Ef.msg(res, e ?? `Something went wrong`, 502) }
-})
-
-//get the propeties neccessary for a quiz update
-r.get('/update/:id', verifyAdmin, async (req: Et.Req, res: Et.Res) => {
-   try {
-      const params = req.params
-      let Q = Quiz.genClass(DbClass)
-      const result = await Q.getQuizForUpdate(params.id, req.userDoc?.id!)
-      Q = null as unknown as Quiz
-      return Ef.obj(res, result, 200)
-   }
-   catch (e) {
-      console.trace(e)
-      return Ef.msg(res, e ?? `Something went wrong`, 502)
-   }
 })
 
 
@@ -207,12 +198,12 @@ r.get('/update/:id', verifyAdmin, async (req: Et.Req, res: Et.Res) => {
 //delete operation
 r.delete('/:id', verifyAdmin, async (req: Et.Req, res: Et.Res) => {
    try {
-      let Q = Quiz.genClass(DbClass)
-      const result = await Q.deleteQuiz(req.params.id, req.userDoc?.id!)
+      let Q = Quiz.genClass()
+      const result = await Q.remove(req.params.id, req.userDoc?.id!)
       Q = null as unknown as Quiz
 
 
-      return Ef.msg(res, `The quiz has been successfully deleted`, 200)
+      return Ef.msg(res, result, 200)
    }
    catch (e) { return Ef.msg(res, e ?? `Something went wrong`, 502) }
 })

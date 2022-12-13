@@ -7,7 +7,6 @@ const r = Router()
 
 r.post('/signup', async (req: Et.Req, res: Et.Res) => {
    try {
-      console.log(req.body)
       const { name, email, password } = req.body
       if (!(name && email && password)) throw Error('invalid credentials!. payload must contain name, email and password')
       const userDoc = await AuthClass.signUserUp({ name, email, password })
@@ -38,7 +37,9 @@ r.post('/logout', async (req: Et.Req, res: Et.Res) => {
       const msg = `You are now logged out`
       return Ef.msg(res, msg, 202)
    }
-   catch (err) { return Ef.msg(res, err, 503) }
+   catch (err) {
+      return Ef.msg(res, err, 503)
+   }
 })
 
 

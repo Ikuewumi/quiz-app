@@ -30,8 +30,15 @@ export const useUser = defineStore('useUser', {
 
    actions: {
       async getUserData() {
-         const result = await apiGet('user/metadata', true) as UserTypes.UserMetadata
-         this.$state = result
+         try {
+            const result = await apiGet('user/metadata', true) as UserTypes.UserMetadata
+            this.$state = result
+         }
+         catch (e) {
+            this.$reset()
+            throw Error(e as string)
+         }
+
       },
 
 

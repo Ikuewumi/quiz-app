@@ -54,7 +54,7 @@ const props = defineProps({
       default: {
          "q": "Just got engaged",
          "options": ["trey", "desire"]
-      } as QuizTypes.ClientQuestion
+      } as QuizTypes.Q
    },
 
    index: {
@@ -73,23 +73,6 @@ const emit = defineEmits<{
    (event: 'previewQuestion'): void,
    (event: 'deleteQuestion'): void
 }>()
-
-// const optionEl = $ref(null as unknown as HTMLElementTagNameMap["quiz-options"])
-// const questionEl = $ref(null as unknown as HTMLElementTagNameMap["quiz-question"])
-
-const getOptions = $computed(() => {
-   const processed = props.question.options.map((option, i, array) => {
-      const obj: Option = { option }
-      if (i === array.length - 1) obj.on = true
-
-      return obj
-   })
-
-   console.log(processed)
-
-   return processed
-
-})
 
 
 onMounted(() => {

@@ -18,7 +18,6 @@ export class QuizMiniNav extends LitElement {
 
    updated() {
       const spans = Array.from(this.shadowRoot?.querySelectorAll('span.btn')!) as HTMLSpanElement[]
-      console.log(spans)
       spans.forEach(span => {
          span.addEventListener('click', _ => {
             const isPrev = span.classList.contains('prev')

@@ -55,7 +55,7 @@ import user from "@/assets/user.svg"
 import gmail from "@/assets/gmail.svg"
 
 import { regexObject, setAccessExpiryDate, setRefreshToken, setToken, validateRegex } from "../../composables/env"
-import { createToastPromise, useToast } from "../../composables"
+import { createToastPromise, useToast, title } from "../../composables"
 import { apiGet, apiPost } from "../../composables/auth"
 import { AuthTypes, MessageTypes } from "types"
 import { ref } from "vue"
@@ -68,11 +68,12 @@ const toggleState = () => isLoggingIn = !isLoggingIn
 const signUpForm = ref(null as unknown as HTMLFormElement)
 const logInForm = ref(null as unknown as HTMLFormElement)
 
-const a = (...args: any[]) => console.log(args)
 
 const user_ = useUser()
 const router = useRouter()
 
+
+title('Sign Up | Login')
 
 
 
@@ -90,7 +91,6 @@ const signUserUp = () => {
       const emailValue = await validateRegex('email', email, 'email is invalid! it does not match pattern')
       const passwordValue = await validateRegex('password', password, 'password must be more than 6 charaters, at least')
 
-      console.log(emailValue, passwordValue)
 
       const result = await apiPost('auth/signup', {
          name: nameValue,
@@ -98,8 +98,21 @@ const signUserUp = () => {
          password: passwordValue
       }, false) as MessageTypes.Msg
 
+      const r2 = await apiPost('auth/login', {
+         email: emailValue,
+         password: passwordValue
+      }, false) as AuthTypes.Tokens
 
-      console.log('results', result)
+
+      setToken(r2.accessToken)
+      setRefreshToken(r2.refreshToken)
+      setAccessExpiryDate()
+
+      useToast().el.show(`${emailValue} has been signed in`, false)
+      await user_.getUserData()
+      router.push('/you')
+
+
       useToast().el.show(result.message, false)
 
 
@@ -129,7 +142,7 @@ const logUserIn = () => {
 
       useToast().el.show(`${emailValue} has been signed in`, false)
       await user_.getUserData()
-      router.push('/user')
+      router.push('/you')
 
    }, 'Logging user in...')()
 }

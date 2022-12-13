@@ -1,210 +1,203 @@
-import { MdLib } from 'md'
-import { Model, isValidObjectId, Document, Types, FilterQuery } from "mongoose"
-import { QuizTypes, DocumentTypes } from 'types'
-import { arr, str } from "helpers"
+import { z } from "zod"
+import process from "node:process"
 import shortid from 'shortid'
-import { DbLibrary } from './Db.js'
-import { Tag } from './Tag.js'
+import { Model, isValidObjectId, Document, FilterQuery, SortOrder } from "mongoose"
+import { DocumentTypes, Types } from "types"
+import { DbClass } from "../config/db.js"
 
+
+
+
+export const zQuizMetadata = z.object({
+   title: z.string(),
+   description: z.string(),
+   image: z.string(),
+   tags: z.string().array().min(1),
+   bookmarks: z.number().optional(),
+   showCorrection: z.boolean().optional().default(false),
+   drafted: z.boolean().optional().default(true),
+   _id: z.any().optional(),
+   createdAt: z.date().optional(),
+   updatedAt: z.date().optional()
+})
+
+
+export const zQuizMetadataExtra = zQuizMetadata.extend({ aid: z.string().min(0) })
+
+export const zQExtra = z.object({ sid: z.string() })
+
+export const zQClient = z.object({
+   q: z.string(),
+   info: z.string().optional(),
+   image: z.string().min(1).optional(),
+   options: z.string().array().min(2)
+})
+export const zQServer = zQClient.extend(zQExtra.shape)
+
+export const zAClient = z.object({ answer: z.string() })
+export const zAServer = zAClient.extend(zQExtra.shape)
+
+
+export const zClientQuiz = z.object({
+   metadata: zQuizMetadata,
+   questions: zQClient.array().min(1)
+})
+
+export const zQuizMode = z.enum(['easy', 'hard', 'medium']).default('hard')
+
+
+export const zClientQuizWithQuestions = zQuizMetadataExtra.extend({ questions: zQServer.array().min(1) })
+
+export const zFullQuiz = zClientQuizWithQuestions.extend({ answers: zAServer.array().min(1) })
+
+
+
+
+
+
+
+
+interface Config { page: number, limit: number }
+interface Selects { [index: string]: 1 }
+type SortQuery<T> = { [P in keyof T]?: 1 | -1; }
+
+async function createSelectField(selects: string[]) {
+   const obj = {} as unknown as Selects;
+   selects.forEach(key => obj[key] = 1);
+   return obj
+}
+
+
+//TODO. If Stable, add to the project
+async function getPaginatedData<T>(
+   model: Model<T>,
+   filters: FilterQuery<T> = {},
+   selects: string[],
+   sort: string | {
+      [key: string]: SortOrder | { $meta: "textScore"; };
+   } | [string, SortOrder][] | null | undefined = { createdAt: 1 },
+   config: Config = { page: 1, limit: 20 },
+) {
+
+
+   const result = await model.find(filters)
+      .select(createSelectField(selects))
+      .sort(sort)
+      .skip(config.limit * config.page)
+      .limit(config.limit)
+
+   const count = await model.count(filters)
+
+
+
+   return {
+      data: result, count: count, page: config.page,
+      maxPageCount: config.limit, pageCount: result.length
+   }
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//TODO: IF it is stable and works, move this class to the main QuizClass doc: file:///C:/Users/Ayobami/Projects/quiz-app/server/src/classes/Quiz.ts and the types
 
 
 export class Quiz {
-   static async mdToHtml(md: string) { return MdLib.mdToHtml(md) }
-   static async htmlToMd(html: string) { return MdLib.htmlToMd(html) }
 
-   static checkQuizTypings(payload: {
-      metadata: QuizTypes.QuizMetadata,
-      questions: QuizTypes.ClientQuestion[]
-   }) {
-      try {
-         const metaisValid = str(payload?.metadata?.description, payload?.metadata?.title, payload?.metadata?.image, ...payload?.metadata?.tags) as boolean
-         const questionsAreValid = payload?.questions.map(q => str(q?.q, q?.info ?? '', q?.image ?? '', ...q?.options) as boolean).reduce((acc, curr) => !!(acc && curr), true)
-
-         if (!(metaisValid && questionsAreValid)) throw Error('')
-
-         return {
-            metadata: payload.metadata,
-            questions: payload.questions
-         }
-      } catch (e) {
-         throw Error('typings are incorrect')
-      }
-   }
-
-   static checkAnswers(payload: DocumentTypes.Answer) {
-      const metaisValid = str(payload?.qid) as boolean
-      const checkAnswer = (payload: QuizTypes.Answer) => str(payload?.answer, payload?.qid, payload?.sid)
-      const answersAreValid = arr(payload?.data) && payload?.data.reduce((acc, curr) => {
-         return !!(acc && checkAnswer(curr))
-      }, true)
-
-      if (!(metaisValid && answersAreValid)) throw Error('whoops! the answer is invalid')
-
-
-      return {
-         qid: payload.qid,
-         data: payload.data
-      }
-
+   constructor(public QuizModel: Model<QuizModel>) {
    }
 
 
-   static genClass(DbClass: DbLibrary) {
-      const r = new Quiz({
-         answers: DbClass.getProp<DocumentTypes.Answer>('answer'),
-         questions: DbClass.getProp<DocumentTypes.Question>('question'),
-         quiz: DbClass.getProp<DocumentTypes.Quiz>('quiz')
-      })
-
-      return r
-   }
-
-   constructor(
-      public collections: {
-         quiz: Model<DocumentTypes.Quiz>,
-         questions: Model<DocumentTypes.Question>,
-         answers: Model<DocumentTypes.Answer>
-      }
-   ) { }
+   static genId = () => shortid.generate()
 
 
-   async save(aid: string, metadata: QuizTypes.QuizMetadata, questions: QuizTypes.ClientQuestion[],) {
-
-      const qD = await this.collections.quiz.exists({ title: metadata.title })
-
-      if (qD) throw Error('please use another title. this one has been taken')
-
-
-      const nQuiz: DocumentTypes.Quiz = {
-         aid: aid,
-         title: metadata.title,
-         description: metadata.description,
-         tags: metadata.tags,
-         image: metadata.image,
-         answers: "", questions: "",
-         bookmarks: 0, drafted: true,
-         showCorrection: metadata.showCorrection ?? false
-      }
-
-      const nQuizDoc = await (new this.collections.quiz(nQuiz)).save()
-      const nQuestion: DocumentTypes.Question = { qid: nQuizDoc.id, data: [] }
-      const nAnswer: DocumentTypes.Answer = { qid: nQuizDoc.id, data: [] }
-
-
-      let T = Tag.createClass()
-      T.updateTags(metadata.tags)
-      T = null as unknown as Tag
-
-
-      questions.forEach(q => {
-         const { question, answer } = this.processQuestion(q, nQuizDoc.id)
-         nQuestion.data.push(question)
-         nAnswer.data.push(answer)
-      })
-
-      // console.log(nQuizDoc, nAnswer, nQuestion)
-
-      const nQuestionDoc = new this.collections.questions(nQuestion)
-      const nAnswerDoc = new this.collections.answers(nAnswer)
-
-      const newPromises = [nQuestionDoc.save(), nAnswerDoc.save()]
-      const promisesResult = await Promise.all(newPromises)
-
-      await this.collections.quiz.updateOne(
-         { _id: nQuizDoc.id },
-         { questions: promisesResult[0].id, answers: promisesResult[1].id, }
-      )
-
-      const qDoc = await this.collections.quiz.findOne({ _id: nQuizDoc.id })
-
-      return [qDoc, ...promisesResult]
-
-   }
-
-
-
-   async changeBookmark(qid: string, aid: string, increase = true) {
-      const a = increase ? 1 : -1
-      const result = await this.collections.quiz.updateOne(
-         { _id: qid },
-         { $inc: { bookmarks: a } }
-      )
-
-      if (!result.modifiedCount) throw Error('could not bookmark')
-
-      return result
-   }
-
-   async changeDrafted(qid: string, aid: string, draft = true) {
-      const a = Boolean(draft)
-      const result = await this.collections.quiz.updateOne(
-         { _id: qid, aid },
-         { $set: { drafted: a } }
-      )
-
-
-      if (!result.modifiedCount) throw Error('could not bookmark')
-
+   async create(payload: unknown, aid: string) {
+      const dbDoc = new this.QuizModel(Quiz.getDbObject(payload, aid))
+      const r1 = await dbDoc.save()
+      const result = zQuizMetadataExtra.strip().parse(r1)
       return result
    }
 
 
-   async getMetadata(qid: string, aid: string) {
+   /**Read to update Quiz*/
+   async read(qid: string, filters: FilterQuery<QuizModel> = {}) {
+      const dbDoc = await this.QuizModel.findOne({ _id: qid, ...filters }).select(Quiz.questionsFields)
+      if (!dbDoc) throw Error('quiz not found')
+      if (!isValidObjectId(dbDoc?.id)) throw Error('quiz not found')
 
-      const metadata = await this.collections.quiz.findOne({ _id: qid })
-      if (!isValidObjectId(metadata?._id!)) throw Error('no quiz metadata present')
-      if (!metadata) throw Error('no quiz metadata present')
+      const result = zClientQuizWithQuestions.strip().parse(dbDoc)
+      return result
+   }
 
-      return metadata
+   async update(payload: unknown, aid: string, qid: string) {
+      const dbDoc = Quiz.getDbObject(payload, aid)
+      const r = await this.QuizModel.updateOne({ _id: qid }, { ...dbDoc })
+      if (!r.modifiedCount) throw Error('could not modify quiz')
 
-
+      return `Quiz successfully updated`
    }
 
 
-   async getMeta(qid: string, uid: string, draft: boolean = false) {
 
-      const filterObject: FilterQuery<DocumentTypes.Quiz> = {}
+   async remove(qid: string, aid: string) {
+      const r = await this.QuizModel.deleteOne({ _id: qid, aid })
+      if (!r.deletedCount) throw Error('could not delete quiz')
 
-      if (draft) {
-         filterObject['aid'] = uid;
-         filterObject['drafted'] = true
-      }
-
-      const metadata = await this.collections.quiz.findOne({ _id: qid, ...filterObject })
-      if (!isValidObjectId(metadata?._id!)) throw Error('no quiz metadata present')
-      if (!metadata) throw Error('no quiz metadata present')
-
-      return metadata
-
-
+      return `Quiz successfully deleted`
    }
 
-   async getCorrection(qid: string, aid: string) {
 
-      const quizMetadataDoc = await this.collections.quiz.findOne({ _id: qid, showCorrection: true })
-      if (!isValidObjectId(quizMetadataDoc?._id!)) throw Error('quiz not present')
-      if (!quizMetadataDoc) throw Error('quiz not present')
+   /**Mark Quizzes */
+   async mark(qid: string, userAnswers: unknown) {
 
-      const quizQuestionDoc = await this.collections.questions.findOne({ qid })
-      if (!isValidObjectId(quizQuestionDoc?._id!)) throw Error('quiz not present')
-      if (!quizQuestionDoc) throw Error('quiz not present')
+      const answers = (zAServer.strip().array().min(1)).parse(userAnswers)
+
+      const dbDoc = await this.QuizModel.findOne({ _id: qid, drafted: false }).select(Quiz.answersFields)
+      if (!dbDoc) throw Error('quiz not found')
+      if (!isValidObjectId(dbDoc?.id)) throw Error('quiz not found')
+
+      const r1 = zFullQuiz.strip().parse(dbDoc)
+      const r2 = zQuizMetadataExtra.strip().parse(dbDoc)
+
+      let scoreData = { score: 0, total: r1.questions.length }
 
 
-      quizQuestionDoc.data = quizQuestionDoc.data.map(question => {
-         const q: QuizTypes.Question = {
-            ...question,
-            options: [question.options.at(-1)! as string]
-         }
-
-         return q
+      answers.forEach((ans_) => {
+         const isCorrect = r1.answers.findIndex(ans => ((ans.answer === ans_.answer) && (ans.sid === ans_.sid))) !== -1
+         scoreData.score = !!(isCorrect) ? scoreData.score += 1 : scoreData.score
       })
 
 
       return {
-         metadata: quizMetadataDoc,
-         questions: quizQuestionDoc
-      }
 
+         quizDoc: r2,
+         scoreData
+
+      }
 
 
    }
@@ -212,207 +205,201 @@ export class Quiz {
 
 
 
-   processQuestion(q: QuizTypes.ClientQuestion, qid: string) {
-      const sid = Quiz.genId()
-      const answer = q.options[q.options.length - 1]
-
-      const pq: QuizTypes.Question = { ...q, sid, options: q.options, qid }
-      const pa: QuizTypes.Answer = { answer, sid, qid }
-
-
-      return {
-         question: pq,
-         answer: pa
-      }
-   }
-
-
-   async getQuiz(
-      params: {
-         qid: string,
-         drafted: boolean,
-         userDoc: DocumentTypes.User,
-         mode?: QuizTypes.Mode,
-      }
-   ) {
 
 
 
 
-      const QuizMetadataDoc = await this.collections.quiz.findOne({ _id: params.qid })!
-      if (!isValidObjectId(QuizMetadataDoc?._id)) throw Error('quiz not found')
-      const QuizQuestionsDoc = await this.collections.questions.findById(QuizMetadataDoc?.questions)!
-      if (!isValidObjectId(QuizQuestionsDoc?._id)) throw Error('quiz not found')
 
 
 
 
-      if (params.drafted) {
-         const isValid = !!(params.userDoc?.admin) && (params.userDoc.id === QuizMetadataDoc?.aid)
-         if (!isValid) throw Error('sorry! you cannot view a drafted quiz unless you are the author')
-         return this.gq(params.qid, { aid: params.userDoc.id!, drafted: true })
-      }
 
 
 
-      const result = await this.gq(params.qid, { drafted: false })
 
-      result.questionsDoc.data = result.questionsDoc.data.map(q => {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   /**Read a quiz ready for client to do */
+   async quiz(qid: string, mode: Mode) {
+      const quizDoc = await this.read(qid, { drafted: false })
+      const timeObj = Quiz.processMode(mode, quizDoc.questions.length)
+
+      //Scramble options
+      quizDoc.questions = quizDoc.questions.sort(_ => Math.random() - 0.5).map(q => {
          return { ...q, options: Quiz.scrambleOptions(q.options) }
       })
 
+      return {
+         ...quizDoc,
+         ...timeObj
+      }
+   }
 
-      const timeData = await this.processMode(params.mode ?? 'medium', result.questionsDoc.data.length! ?? 0)
+
+   /** read a drafted quiz to update it */
+   async adminRead(qid: string, userDoc: DocumentTypes.User) {
+      const quizDoc = await this.read(qid, { drafted: true, aid: userDoc.id })
+      const isValid = !!(userDoc.admin)
+
+      if (!isValid) throw Error(`oops! you do not have permissions to view this`)
 
 
       return {
-         ...timeData,
-         ...result
+         ...quizDoc
+      }
+   }
+
+
+   async getCorrection(qid: string) {
+      const quizDoc = await this.read(qid, { drafted: false, showCorrection: true })
+      quizDoc.questions = quizDoc.questions.map(question => {
+         return {
+            ...question,
+            options: [question.options[question.options.length - 1]]
+         }
+      })
+
+      return {
+         ...quizDoc
+      }
+   }
+
+
+
+   async changeDraftStatus(qid: string, aid: string, drafted: boolean = false) {
+      const r = await this.QuizModel.updateOne({ _id: qid, aid }, { drafted })
+      if (!r.modifiedCount) throw Error('could not modify quiz')
+
+      return `Quiz successfully updated`
+   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   async readMetadata(qid: string, filters: FilterQuery<QuizModel> = {}) {
+      const dbDoc = await this.QuizModel.findOne({ _id: qid, ...filters }).select(Quiz.metadataFields)
+      if (!dbDoc) throw Error('quiz not found')
+      if (!isValidObjectId(dbDoc?.id)) throw Error('quiz not found')
+
+      const result = zQuizMetadataExtra.strip().parse(dbDoc)
+      return result
+   }
+
+
+   static getDbObject(payload: unknown, aid: string = "") {
+      const { metadata, questions } = zClientQuiz.parse(payload)
+      const dbData = Quiz.processQuestions(questions)
+
+      const dbDoc: fullQuiz = {
+         title: metadata.title,
+         description: metadata.description,
+         image: metadata.image,
+         tags: metadata.tags,
+         questions: dbData.questions,
+         answers: dbData.answers,
+         showCorrection: metadata.showCorrection,
+         drafted: metadata.drafted,
+         aid: aid,
       }
 
-
-
-
-
-
+      return dbDoc
 
    }
 
 
 
-   async getQuizForClient(qid: string, mode: QuizTypes.Mode, userDoc: Document<unknown, any, DocumentTypes.User> & DocumentTypes.User & { _id: Types.ObjectId; }) {
-      const QuizMetadataDoc = (await this.collections.quiz.findById(qid))!
-      if (!isValidObjectId(QuizMetadataDoc?._id)) throw Error('quiz not found')
-      const QuizQuestionsDoc = await this.collections.questions.findById(QuizMetadataDoc?.questions)!
-      if (!isValidObjectId(QuizQuestionsDoc?._id)) throw Error('quiz not found')
-      const timeObj = await this.processMode(mode ?? 'medium', QuizQuestionsDoc?.data?.length! ?? 0)
+   private static processQuestion(q: Q) {
+      const sid = Quiz.genId()
+      const a = q.options[q.options.length - 1]
 
-      const questions = QuizQuestionsDoc?.data.map(question => {
-         return {
-            ...question,
-            options: Quiz.scrambleOptions(question.options)
-         }
-      }) ?? []
+      const question = { ...q, sid } as Question
+      const answer = { sid, answer: a } as Answer
 
 
-      const result: QuizTypes.ClientQuiz = {
-         time: timeObj.time,
-         mode: timeObj.mode,
-         metadata: {
-            title: QuizMetadataDoc.title,
-            description: QuizMetadataDoc.description,
-            image: QuizMetadataDoc.image,
-            qid: QuizMetadataDoc.id,
-            tags: QuizMetadataDoc.tags,
-            showCorrection: QuizMetadataDoc?.showCorrection ?? false
-         },
-         questions,
-         //TODO: remove the optional chains b4 prod.
-         user: {
-            aid: userDoc.id ?? '',
-            email: userDoc.email ?? '',
-            name: userDoc.name ?? ''
-         }
-      }
+      return { question, answer }
+   }
 
+   private static processQuestions(qs: Q[]) {
+      const [questions, answers] = [[] as Question[], [] as Answer[]]
 
+      qs.forEach(q => {
+         const { question, answer } = Quiz.processQuestion(q)
+         questions.push(question); answers.push(answer);
+      })
 
-      return result as QuizTypes.ClientQuiz
+      return { questions, answers }
+
    }
 
    static scrambleOptions(opts: string[]) {
       return opts.sort((a, b) => Math.random() - 0.5)
    }
 
-   async processMode(mode: QuizTypes.Mode, questionNo: number) {
-      let time = 0
-      switch (mode) {
-         case 'easy':
-            time = questionNo * 30
-            break;
+   private static processMode(m: string, q: number) {
+      let mode: Mode;
+      const mode_ = zQuizMode.safeParse(m)
+      mode = mode_.success ? mode_.data : 'hard'
 
-         case 'medium':
-            time = questionNo * 20
-            break;
-
-         case 'hard':
-         default:
-            time = questionNo * 15
-            break;
-      }
+      let timePerQuestion = 0
+      timePerQuestion = (mode === 'easy') ? 25 : ((mode === 'medium') ? 15 : ((mode === 'hard') ? 10 : 10))
 
       return {
-         time,
-         mode: mode ?? 'hard'
-      }
-   }
-
-
-   public static genId(): string {
-      return shortid.generate()
-   }
-
-
-
-   async markQuiz(userAnswers: QuizTypes.ClientAnswer) {
-      const quizDoc = await this.collections.quiz.findOne({ _id: userAnswers.qid })
-      if (!(isValidObjectId(quizDoc?.id))) throw Error('quiz not found')
-      const answersDoc = await this.collections.answers.findOne({ _id: quizDoc?.answers })
-      if (!(isValidObjectId(answersDoc?.id))) throw Error('quiz not found')
-      if (!(answersDoc && quizDoc)) throw Error('quiz not found')
-
-      let quizScores = {
-         score: 0,
-         total: answersDoc.data.length,
+         time: timePerQuestion * q,
+         mode
       }
 
-      userAnswers.data.forEach((ans_) => {
-         const isCorrect = answersDoc.data.findIndex(ans => ((ans.answer === ans_.answer) && (ans.qid === ans_.qid) && (ans.sid === ans_.sid))) !== -1
-         quizScores.score = isCorrect === true ? quizScores.score += 1 : quizScores.score
-      })
-
-      return {
-         scoreData: quizScores,
-         quizDoc
-      }
 
    }
 
 
-   async deleteQuiz(qid: string, aid: string) {
-      const quizDoc = await this.collections.quiz.findOne({ _id: qid, aid: aid })
-      if (!(isValidObjectId(quizDoc?.id))) throw Error('quiz not found')
 
-      const questionsDoc = await this.collections.questions.findById(quizDoc?.questions!)!
-      if (!(isValidObjectId(questionsDoc?.id))) throw Error('quiz not found')
-
-
-      let T = Tag.createClass()
-      T.updateTags([], quizDoc?.tags!)
-      T = null as unknown as Tag
-
-
-      const promises = [
-
-         this.collections.quiz.deleteOne({ id: qid! }),
-         this.collections.questions.deleteMany({ qid }),
-         this.collections.answers.deleteMany({ qid }),
-
-      ]
-
-      return Promise.all(promises)
-
+   static metadataFields = {
+      title: 1, description: 1, image: 1, tags: 1, aid: 1,
+      bookmarks: 1, showCorrection: 1, drafted: 1
    }
 
-   async getQuizForUpdate(qid: string, aid: string) {
 
-      const { quizDoc, questionsDoc } = await this.gq(qid, { aid, drafted: true })
+   static questionsFields = {
+      ...Quiz.metadataFields, questions: 1
+   }
+
+   static answersFields = {
+      ...Quiz.questionsFields, answers: 1
+   }
 
 
-      return {
-         quizDoc,
-         questionsDoc
-      }
+
+   static genClass = () => {
+      return (new Quiz(DbClass.getProp<QuizModel>('quiz')))
    }
 
 
@@ -424,89 +411,51 @@ export class Quiz {
 
 
 
-   async gq(qid: string, filter: FilterQuery<DocumentTypes.Quiz> = {}) {
-      const quizDoc = await this.collections.quiz.findOne({ _id: qid, ...filter })
-      if (!(isValidObjectId(quizDoc?.id))) throw Error('quiz not found')
-      if (!quizDoc) throw Error('quiz not found')
-
-      const questionsDoc = await this.collections.questions.findById(quizDoc?.questions!)!
-      if (!(isValidObjectId(questionsDoc?.id))) throw Error('quiz not found')
-      if (!questionsDoc) throw Error('quiz not found')
-
-      return {
-         quizDoc,
-         questionsDoc
-      }
-   }
 
 
 
 
-
-
-   async update(qid: string, aid: string, payload: {
-      metadata: QuizTypes.QuizMetadata,
-      questions: QuizTypes.ClientQuestion[]
-   }) {
-
-      Quiz.checkQuizTypings(payload)
-
-      const quizDoc = await this.collections.quiz.findOne({ id: qid, aid, drafted: true })
-      if (!quizDoc) throw Error('quiz not found')
-      if (!(isValidObjectId(quizDoc?.id))) throw Error('quiz not found')
+}
 
 
 
 
-
-      const questionsDoc = await this.collections.questions.findById(quizDoc?.questions!)!
-      // if (!questionsDoc) throw Error('quiz not found')
-      if (!(isValidObjectId(questionsDoc?.id))) throw Error('quiz not found')
-
-      await this.collections.quiz.updateOne({ id: qid, aid }, {
-         $set: {
-            title: payload.metadata.title,
-            description: payload.metadata.description,
-            image: payload.metadata.image,
-            tags: payload.metadata.tags,
-            showCorrection: payload.metadata?.showCorrection ?? false
-         }
-      })
+interface QuizModel extends fullQuiz, Types.TimeData { }
 
 
-      const nQuestion: DocumentTypes.Question = { qid, data: [] }
-      const nAnswer: DocumentTypes.Answer = { qid, data: [] }
+export interface Sid {
+   sid: string
+}
+
+export interface Qid {
+   qid: string
+}
+
+export interface Q {
+   q: string,
+   info?: string,
+   options: Array<string>,
+   image?: string
+}
+
+export interface Question extends Sid, Q { }
+export interface Answer extends Sid { answer: string }
+
+export interface QuizMetadata {
+   title: string,
+   description: string,
+   image: string,
+   tags: Array<string>,
+   bookmarks?: number,
+   showCorrection?: boolean,
+   drafted?: boolean
+}
+
+type Mode = 'easy' | 'medium' | 'hard'
 
 
-      let T = Tag.createClass()
-      T.updateTags(payload.metadata.tags, quizDoc.tags)
-      T = null as unknown as Tag
-
-      payload.questions.forEach(q => {
-         const { question, answer } = this.processQuestion(q, qid)
-         nQuestion.data.push(question)
-         nAnswer.data.push(answer)
-      })
-
-      console.log(nQuestion)
-
-      const promises = [
-         this.collections.questions.updateOne(
-            { _id: quizDoc?.questions! },
-            { $set: nQuestion }
-         ),
-         this.collections.answers.updateOne(
-            { _id: quizDoc?.answers! },
-            { $set: nAnswer }
-         )
-      ]
-
-
-      return Promise.all(promises)
-   }
-
-
-
-
-
+export interface fullQuiz extends QuizMetadata {
+   aid: string,
+   questions: Question[],
+   answers: Answer[],
 }

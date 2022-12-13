@@ -1,142 +1,52 @@
 <template>
    <div data-p data-p-user class="sgrid even-cols">
-      <Metadata :user="userData.$state" @to-admin="metadataM.toAdminPage" @edit-profile="metadataM.showUpdateModal" />
-      <Modal header="Edit Profile" :show-modal="b.showUpdate" @close-modal="b.showUpdate = false">
-         <UpdateMetadata @submit-form="metadataM.updateMetadata" />
-      </Modal>
-      <div data-f-history-list v-if="dialogM.booleans.history">
-         <HistoryCard v-for="(history, i) of historyDocs.data" :data="history" :key="i" />
-      </div>
+      <Metadata :showEdit="false" :user="metadataDoc" v-if="metadataDoc" />
+
+      <section data-f-container v-if="(publishedQuizzes.state.data.length && metadataDoc?.admin)">
+         <div data-f>
+            <h3>Published</h3>
+            <p>Here you can see and take quizzes made by this user</p>
+         </div>
+         <div class="dis-grid g-6">
+            <div data-f-quiz-card-list>
+               <QuizCard v-for=" (quiz, i) in (publishedQuizzes.state.data as DocumentTypes.Quiz[])" :key="i"
+                  :data="quiz" />
+            </div>
+            <PaginationBar :showMore="publishedQuizzes.computedShouldShowMore" :text="publishedQuizzes.computedText"
+               @show-more="publishedQuizzes.promiseNextPage" />
+         </div>
+      </section>
    </div>
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted } from 'vue';
-import { createToastPromise } from '../../composables';
-import { useUser } from '../../pinia/user';
+import { createToastPromise, title } from '../../composables';
 import Metadata from '../../components/user/Metadata.vue';
-import Modal from '../../components/utitlities/Modal.vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { apiGet } from '../../composables/auth';
-import { ApiTypes, DocumentTypes } from 'types';
-let HistoryCard = defineAsyncComponent(() => import('../../components/quiz/HistoryCard.vue'))
-let UpdateMetadata = defineAsyncComponent(() => import('../../components/user/UpdateMetadata.vue'))
+import { ApiTypes, AuthTypes, DocumentTypes, QuizTypes, UserTypes } from 'types';
+import { paginate } from '../../composables/pagination';
+const QuizCard = defineAsyncComponent(() => import('../../components/quiz/QuizCard.vue'))
+const PaginationBar = defineAsyncComponent(() => import('../../components/utitlities/PaginationBar.vue'))
 
-const userData = useUser()
-const router = useRouter()
-let historyDocs = $ref(null as unknown as ApiTypes.PaginatedData<DocumentTypes.History>)
+const route = useRoute()
 
-const b = $ref({
-   showUpdate: false
-})
+const qid = $computed(() => route.params.id)
 
-
-const booleans = $ref({
-   quiz: false,
-   metadata: false,
-   postquiz: false
-} as { [index: string]: boolean })
-
-
-
-
-
-const dialogM = $ref({
-   booleans: {
-      history: false
-   } as { [index: string]: boolean },
-
-
-   show(key: string) {
-      const isValid = key in dialogM.booleans
-      if (isValid) dialogM.booleans[key] = true
-   },
-
-   hide(key: string) {
-      const isValid = key in dialogM.booleans
-      if (isValid) dialogM.booleans[key] = false
-   }
-})
-
-
-const adminM = {
-
-
-
-}
-
-
-
-
-
-const metadataM = {
-
-   async showUpdateModal() {
-      b.showUpdate = true
-   },
-
-
-
-   async updateMetadata(payload: InputMetadata) {
-
-      await createToastPromise(
-         async () => await userData.updateUserData(payload),
-         'Updating user profile',
-         true
-      )()
-
-      b.showUpdate = false
-
-
-
-   },
-   async toAdminPage() {
-      return router.push('/admin')
-   }
-
-
-
-}
-
-
-
-const historyM = {
-
-
-   async getHistory() {
-      dialogM.hide('history')
-      historyDocs = await apiGet(`lists/history?page=1`, true)
-      dialogM.show('history')
-      // console.log(r)
-   }
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+let publishedQuizzes = paginate(`lists/user/quizzes/${qid}?`, 20, false)
+let metadataDoc = $ref(null as unknown as UserTypes.UserMetadata)
 
 
 
 onMounted(() => {
 
-   historyM.getHistory()
 
    createToastPromise(async () => {
-      userData.getUserData()
+      await publishedQuizzes.value.start()
+      metadataDoc = await apiGet(`user/metadata/${qid}`, false)
+      title(`${metadataDoc.name} | Profile`)
+
    }, 'Loading User Data', false)()
 
 

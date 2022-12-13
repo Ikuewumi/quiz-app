@@ -3,7 +3,7 @@
       <header-text content="Enter Quiz Metadata"></header-text>
       <form class="dis-grid g-5">
          <div class="img">
-            <img :src="store.quizMetadata?.image" v-if="store.quizMetadata?.image > ''" alt="">
+            <img :src="imgRef" v-if="imgRef > ''" alt="">
 
             <span class="btn-bar">
                <button type="button" ref="editImgBtn" @click="LogicClass.showFilePicker">
@@ -12,7 +12,7 @@
                   </svg>
                </button>
 
-               <button type="button" v-if="store.quizMetadata?.image > ''" @click="LogicClass.removeImg">
+               <button type="button" v-if="imgRef > ''" @click="removeImg">
                   <svg viewBox="0 0 26 26">
                      <use href="#delete_metro"></use>
                   </svg>
@@ -23,26 +23,34 @@
          </div>
          <main class="dis-grid g-5">
             <input name="title" ref="titleInput" type="text" placeholder="Title" required>
-            <input type="file" @change="LogicClass.showImg" accept="image/*" ref="hiddenFileInput" hidden>
-            <select v-model="toShowCorrection" name="showCorrection" id="">
-               <option value="Do you want to show correction after the quiz?" disabled>
-                  Do you want to show correction after the quiz?
-               </option>
-               <option value="yes">Yes</option>
-               <option value="no">No</option>
-            </select>
+            <input type="file" @change="showImg" accept="image/*" ref="hiddenFileInput" hidden>
+
             <textarea name="description" ref="descriptionInput" placeholder="Description (at least 30 characters)"
                required></textarea>
-            <input name="tags" @keyup="LogicClass.checkTagInput" ref="tagsInput" type="text"
-               placeholder="Enter tags (separated by a comma)">
-            <div class="tags">
-               <span v-for="(tag, i) of store.quizMetadata.tags" :key="i">
-                  {{ tag }}
-                  <svg viewBox="0 0 26 26" @click="LogicClass.removeTag(i)">
-                     <use href="#delete_metro"></use>
-                  </svg>
-               </span>
+
+
+            <div data-select-bar>
+
+               <select v-model="toShowCorrection" name="showCorrection" ref="showCorrectionInput">
+                  <option value="Do you want to show correction after the quiz?" disabled>
+                     Do you want to show correction after the quiz?
+                  </option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+               </select>
+
+               <select v-model="tag" name="tag" ref="tagsInput">
+                  <option value="docs" disabled>
+                     Choose a topic this quiz specializes in
+                  </option>
+                  <option v-for="(tag, i) in HintTags" :key="i" :value="tag">{{ tag }}</option>
+               </select>
+
             </div>
+
+
+            <!-- //TODO change the tag system and allow only one tag -->
+
             <button-component @click="checkSubmit" role="button" aria-label="button" :content="props.doneBtn">
             </button-component>
          </main>
@@ -51,13 +59,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue"
-import { useQuizMetadataData } from "../../pinia/quizMetadata";
+import { onMounted, Ref, ref } from "vue"
+import { QuizTypes } from "types";
 import { ReactiveVariable } from "vue/macros";
+import { useQuizMetadataData } from "../../pinia/quizMetadata";
 import { QuizMetadataLogic } from "../../composables/quizMetadata";
 import { useQuizCreation } from "../../pinia/quizCreate"
-import { QuizTypes } from "types";
-const a = (...args: any[]) => console.log(...args)
+import { HintTags } from "../../composables/index"
 
 const props = defineProps({
    doneBtn: {
@@ -68,37 +76,54 @@ const emit = defineEmits<{
    (event: 'submitForm', payload: QuizTypes.QuizMetadata): void
 }>()
 
-const refsData = useQuizMetadataData()
+let imgRef = $ref('')
 const store = useQuizCreation()
 /**@ts-ignore */
 let LogicClass: ReactiveVariable<QuizMetadataLogic> = $ref(null as unknown as QuizMetadataLogic)
 
 
-const hiddenFileInput = $ref(null as unknown as HTMLInputElement)
-const tagsInput = $ref(null as unknown as HTMLInputElement)
-const editImgBtn = $ref(null as unknown as HTMLButtonElement)
-const titleInput = $ref(null as unknown as HTMLInputElement)
-const descriptionInput = $ref(null as unknown as HTMLTextAreaElement)
+const hiddenFileInput = ref(null as unknown as HTMLInputElement)
+const tagsInput = ref(null as unknown as HTMLSelectElement)
+const showCorrectionInput = ref(null as unknown as HTMLSelectElement)
+const editImgBtn = ref(null as unknown as HTMLButtonElement)
+const titleInput = ref(null as unknown as HTMLInputElement)
+const descriptionInput = ref(null as unknown as HTMLTextAreaElement)
 
 
 let toShowCorrection = $ref('no')
+let tag = $ref('medicine')
+
 
 //COMMENT: the Logic class was null so I'm moving checksubmit into a mediator between the template and the logic class 
 const checkSubmit = async () => {
-   const metadata = await LogicClass.checkSubmit()
-   metadata['showCorrection'] = toShowCorrection === 'yes'
+   const metadata = await LogicClass.checkSubmit(imgRef)
+
    emit('submitForm', metadata)
+}
+
+const showImg = async () => {
+   imgRef = await LogicClass.showImg()
+}
+
+
+const removeImg = async () => {
+   imgRef = ''
 }
 
 
 
 onMounted(() => {
-   /**@ts-ignore */
-   LogicClass = new QuizMetadataLogic(editImgBtn, hiddenFileInput, titleInput, descriptionInput, tagsInput, store)
-   LogicClass.init()
+
+
+   LogicClass = new QuizMetadataLogic(editImgBtn.value, hiddenFileInput.value, titleInput.value, descriptionInput.value, tagsInput.value, showCorrectionInput.value, store)
+
+   LogicClass.fillFields(store.$state.quizMetadata)
+   imgRef = store.$state.quizMetadata.image
+
+
    store.$subscribe(() => {
-      LogicClass.fillFields()
-      toShowCorrection = store.quizMetadata?.showCorrection ? 'yes' : 'no'
+      LogicClass.fillFields(store.$state.quizMetadata)
+      imgRef = store.$state.quizMetadata.image
    })
 })
 </script>
@@ -169,6 +194,21 @@ onMounted(() => {
       --pin: 0.7rem;
       --border-color: #00000030;
       --border-color-h: #00000060;
+   }
+
+
+   [data-select-bar] {
+      --select-width: 200px;
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      grid-template-columns: repeat(auto-fit, minmax(min(var(--select-width)), 100%), 1fr);
+      gap: var(--g-list, 1rem);
+
+      select {
+         width: min(var(--select-width), 100%);
+         grid-column: auto;
+      }
    }
 
    label {

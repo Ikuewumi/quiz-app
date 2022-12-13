@@ -10,9 +10,8 @@ import TagModel from "../models/Tag.js"
 import dotenv from "dotenv"
 dotenv.config({})
 
-// console.log(process.env.DB_URI)
 
-export const DbClass = new DbLibrary(process.env.DB_URI ?? 'mongodb://127.0.0.1:27017/quiz-app'!, {
+export const DbClass = new DbLibrary(process.env.DB_URI!, {
    user: UserModel,
    test: TestModel,
    token: TokenModel,

@@ -29,6 +29,7 @@
 <script setup lang="ts">
 import { QuizTypes } from 'types';
 import { onMounted, defineAsyncComponent, onBeforeUnmount } from 'vue';
+import { useToast } from '../../composables';
 import { QuizData, ClientQuiz } from '../../composables/quizClass';
 const Dialog = defineAsyncComponent(() => import('../../components/utitlities/Dialog.vue'))
 
@@ -109,7 +110,12 @@ const startQuiz = () => {
 
    els.quizPage.addEventListener('quiz-submit', (e) => {
       answers = e.detail.answers
-      dialogM.show('submit')
+      if (LogicClass.timeIsRunning) {
+         dialogM.show('submit')
+      } else {
+         useToast().el.show('Time is up! submitting answers')
+         submitQuiz()
+      }
    })
 }
 

@@ -44,6 +44,52 @@ body {
    background-color: rgba(238, 238, 255, 0.275);
 }
 
+[data-f] {
+   display: grid;
+   gap: 0.6rem;
+
+   h3 {
+
+      font-size: var(--size-strong, clamp(1.6rem, 1.6rem + 2vw, 1.8rem));
+      font-family: var(--f-strong, 'Urbanist');
+      font-weight: var(--weight-strong, 400);
+   }
+
+
+   p {
+      font-size: 0.85em;
+   }
+}
+
+
+
+[data-f-container] {
+   display: grid;
+   gap: 0.9rem;
+   margin-top: 0;
+
+   >* {
+      width: 100%;
+   }
+
+
+   a {
+      text-decoration: none;
+   }
+
+
+}
+
+[data-f-container]:first-of-type {
+   margin-top: 0.7rem;
+}
+
+[data-f-container]+[data-f-container] {
+   margin-top: 2rem;
+
+}
+
+
 
 .cursor {
    cursor: pointer;

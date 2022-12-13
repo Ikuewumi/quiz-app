@@ -3,13 +3,13 @@ import { DocumentTypes } from "types"
 
 const schema = new Schema<DocumentTypes.Quiz>({
    "aid": String,
-   "answers": String,
+   "answers": Array,
    "description": String,
    "image": {
       type: String,
       default: ''
    },
-   "questions": String,
+   "questions": Array,
    "tags": Array,
    "title": String,
    "bookmarks": Number,

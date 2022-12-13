@@ -23,7 +23,7 @@
 import { onMounted, onBeforeMount, computed, onUnmounted } from 'vue';
 import { QuizCreationLogic } from '../../composables/quizCreate';
 import { useQuizCreation } from '../../pinia/quizCreate';
-import { createToastPromise, useToast } from '../../composables';
+import { createToastPromise, useToast, title } from '../../composables';
 import { QuizTypes } from 'types';
 import QuizMetadata from '../../components/admin/QuizMetadata.vue';
 import QuizQuestionForm from '../../components/admin/QuizQuestionForm.vue';
@@ -34,6 +34,7 @@ import Dialog from '../../components/utitlities/Dialog.vue';
 import ErrorComponent from "../../components/utitlities/ErrorComponent.vue"
 import { apiGet, apiPost, apiPut } from '../../composables/auth';
 import { useRoute, useRouter } from 'vue-router';
+import { zClientQuizWithQuestions, zQuizMetadata } from '../../composables/validator';
 const sleep = (ms = 2000) => { return (new Promise(r => setTimeout(r, ms))) };
 
 interface Booleans {
@@ -101,13 +102,15 @@ onMounted(() => {
 
 
    createToastPromise(async () => {
+      title('Create New Quiz')
 
       if (isUpdateRoute) {
          const id = route.params.id
          const a = await apiGet(`quiz/drafts/${id}`, true)
-         useCreation.quizMetadata = a.quizDoc as QuizTypes.QuizMetadata
-         useCreation.quizData = a.questionsDoc.data as QuizTypes.Question[]
-         console.log(a)
+
+         useCreation.quizMetadata = zQuizMetadata.strip().parse(a)
+         title(`Update ${useCreation.quizMetadata.title}`)
+         useCreation.quizData = zClientQuizWithQuestions.pick({ questions: true }).parse(a).questions
       }
 
 
@@ -144,15 +147,16 @@ const saveQuiz = () => {
          questions: useCreation.quizData
       }
 
+
+      if (!payloadObject.questions.length) throw Error('there must be at least one question present')
+
       if (isUpdateRoute) {
          const result = await apiPut(`quiz/update/${route.params.id}`, payloadObject)
-         console.log(result)
          id = route.params.id! as string
       } else {
          const result = await apiPost('quiz/create', payloadObject)
-         console.log(result)
          /**@ts-ignore */
-         id = result[0]._id
+         id = result._id
 
       }
 
@@ -178,11 +182,17 @@ const storeMetadata = (data: QuizTypes.QuizMetadata) => {
    LogicClass.clearUnusedQuestions()
 }
 const createQuestion = () => {
+   const isValid = useCreation.$state.quizData.length <= 100
+   if (!isValid) {
+      const msg = 'You cannot have more than 100 questions'
+      useToast().el.show(msg)
+      throw Error(msg)
+   }
    LogicClass.createEmptyQuestion()
    chooseBool('question')
 
 }
-const saveQuestion = (q: QuizTypes.ClientQuestion) => {
+const saveQuestion = (q: QuizTypes.Q) => {
    LogicClass.saveQuestion(q)
    LogicClass.clearUnusedQuestions()
 
@@ -190,7 +200,7 @@ const saveQuestion = (q: QuizTypes.ClientQuestion) => {
 
 }
 
-const saveAndCreateNewQuestion = (q: QuizTypes.ClientQuestion) => {
+const saveAndCreateNewQuestion = (q: QuizTypes.Q) => {
 
    createToastPromise(async () => {
       LogicClass.saveQuestion(q)

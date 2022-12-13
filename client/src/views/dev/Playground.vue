@@ -1,18 +1,15 @@
 <template>
    <div data-p class="sgrid even-cols p-center" data-c-playground>
-      <div data-f-history-list>
-         <HistoryCard />
-         <HistoryCard />
-         <HistoryCard />
-      </div>
+      <ErrorComponent msg="Oops! This page does not exist" link="/" link-msg="To Home" :show-link="true" />
    </div>
 </template>
 
 <script setup lang="ts">
-import HistoryCard from '../../components/quiz/HistoryCard.vue';
-const a = (...args: any[]) => console.log(args)
+import ErrorComponent from "../../components/utitlities/ErrorComponent.vue"
+import { title } from "../../composables"
 
-const showDialog = $ref(true)
+
+title('Error Page')
 </script>
 
 <style lang="scss">
@@ -27,6 +24,4 @@ const showDialog = $ref(true)
       grid-column: 2/ -2
    }
 }
-
-[data-f-quiz-questions-bar] {}
 </style>

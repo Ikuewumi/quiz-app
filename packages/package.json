@@ -6,7 +6,8 @@
    "scripts": {
       "build:types": "tsc -d types/index.ts",
       "build:helpers": "tsc helpers/index.ts",
-      "build": "pnpm run build:types && pnpm run build:helpers"
+      "build": "pnpm run build:types && pnpm run build:helpers",
+      "build:md": "pnpm --filter md build"
    },
    "keywords": [],
    "author": "Ayobami Ikewumi",

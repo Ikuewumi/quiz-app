@@ -9,11 +9,11 @@
          </div>
          <section>
             <RouterLink to="/">home</RouterLink>
-            <RouterLink style="--c: #C678E0" to="/">quizzes</RouterLink>
-            <RouterLink style="--c: #E76A43" to="/user">you</RouterLink>
+            <RouterLink style="--c: #C678E0" to="/quizzes">quizzes</RouterLink>
+            <RouterLink style="--c: #E76A43" to="/you">you</RouterLink>
          </section>
 
-         <p>Copyright &copy; iKAY 2022</p>
+         <p>Copyright &copy; <a target="_blank" href="https://github.com/Ikuewumi">iKAY</a> 2022</p>
       </div>
    </footer>
 </template>
@@ -74,10 +74,21 @@ import { RouterLink } from 'vue-router';
       font-family: var(--f-big);
       font-weight: 700;
       color: #999;
+
+      a {
+         color: #777;
+         font-family: var(--f-big);
+         font-weight: 700;
+         text-decoration: none;
+
+         &:hover {
+            text-decoration: underline;
+         }
+      }
    }
 
 
-   a {
+   section a {
       color: var(--c, var(--clr-dlue));
       font-size: var(--f-size-s0);
       font-weight: 500;

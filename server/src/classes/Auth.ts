@@ -21,7 +21,7 @@ class RefreshTokensLibrary {
 
    async removeRefreshToken(token: string, coll: Model<DocumentTypes.Token>) {
       const result = await coll.deleteOne({ token })
-      if (result.deletedCount < 1) throw Error('this token does not exist')
+      // if (result.deletedCount < 1) throw Error('this token does not exist')
       return result
    }
 
@@ -281,7 +281,6 @@ export class AuthLibrary extends PrivateAuthLibrary {
          { $set: resultObject }
       )
 
-      console.log(result)
 
       if (!result.modifiedCount) throw Error('user update failed')
 

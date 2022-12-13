@@ -64,6 +64,7 @@ const props = defineProps({
       --pbl: 0.8rem;
       --pin: 1.5rem;
       --border-w: 1px;
+      --border-w-h: 1px;
       --border-color: rgb(0 0 0 / 0.2);
    }
 

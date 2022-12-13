@@ -1,7 +1,8 @@
 {
-   "name": "client",
+   "name": "Quiz App",
    "private": true,
    "version": "0.0.0",
+   "description": "An app where you can test your knowledge with multiple quizzes",
    "type": "module",
    "keywords": [
       "vuejs",

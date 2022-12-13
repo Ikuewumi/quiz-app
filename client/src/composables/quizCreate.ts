@@ -9,17 +9,16 @@ export class QuizCreationLogic {
 
    storeMetadata(data: QuizTypes.QuizMetadata) {
       this.store.updateMetadata(data)
-      console.log(data)
    }
 
    createEmptyQuestion() {
       if (this.store.quizData.length >= 100) throw Error('limit reached! you can only add 100 questions to a quiz')
-      const emptyQuestion: QuizTypes.ClientQuestion = { q: "", options: [] }
+      const emptyQuestion: QuizTypes.Q = { q: "", options: [] }
       this.store.quizData.push(emptyQuestion)
       this.store.currentIndex = (this.store.quizData.length - 1)
    }
 
-   saveQuestion(newVal: QuizTypes.ClientQuestion, index?: number) {
+   saveQuestion(newVal: QuizTypes.Q, index?: number) {
       this.store.quizData = this.store.quizData.map((q, i) => {
          if (i === (index ?? this.store.currentIndex)) return newVal
          else return q

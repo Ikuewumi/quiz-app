@@ -1,33 +1,40 @@
 import { ReactiveVariable } from "vue/macros";
 import { QuizTypes } from "types";
-import { useToast } from ".";
+import { HintTags, useToast } from ".";
 import { fileToDataUrl } from "./img";
 import { StoreTypings } from "../pinia/quizMetadata";
 import { Store } from "pinia";
+import { Ref, ref } from "vue";
 
 
 export class QuizMetadataLogic {
+
    constructor(
-      public editImgBtn: ReactiveVariable<HTMLButtonElement>,
-      public hiddenImgInput: ReactiveVariable<HTMLInputElement>,
-      public titleInput: ReactiveVariable<HTMLInputElement>,
-      public descriptionInput: ReactiveVariable<HTMLTextAreaElement>,
-      public tagsInput: ReactiveVariable<HTMLInputElement>,
+      public editImgBtn: HTMLButtonElement,
+      public hiddenImgInput: HTMLInputElement,
+      public titleInput: HTMLInputElement,
+      public descriptionInput: HTMLTextAreaElement,
+      public tagsInput: HTMLSelectElement,
+      public showCorrectionInput: HTMLSelectElement,
       public store: PiniaStores["creation"],
       public data?: QuizTypes.QuizMetadata,
       public config = {
          imgLimit: 100
       },
-   ) { }
+   ) {
+   }
 
 
-   fillFields() {
-      this.titleInput.value = this?.store?.quizMetadata.title ?? ''
-      this.descriptionInput.value = this?.store?.quizMetadata.description ?? ''
+   fillFields(data: QuizTypes.QuizMetadata) {
+
+      this.titleInput.value = data.title ?? ''
+      this.descriptionInput.value = data.description ?? ''
+      this.tagsInput.value = data.tags[0] ?? HintTags[0]
+      this.showCorrectionInput.value = (data?.showCorrection ? 'yes' : 'no')
    }
 
    init() {
-      this.fillFields()
+      // this.fillFields()
       return this
    }
 
@@ -47,7 +54,7 @@ export class QuizMetadataLogic {
 
          const string = await fileToDataUrl(file)
          this.fillSomeFields()
-         this.store.quizMetadata.image = string
+         // this.customRef.value.image = string
          return string
 
       } catch (e) {
@@ -56,30 +63,25 @@ export class QuizMetadataLogic {
       }
    }
 
-   checkTagInput() {
-      const isValid = this.tagsInput.value.split(',') && this.tagsInput.value.includes(',')
-      if (isValid) {
-         const validTags = this.tagsInput.value.split(',').map(tag => tag.trim().toLowerCase()).filter(tag => tag !== '.' && tag > '').filter(tag => !this?.store?.quizMetadata.tags.includes(tag))
-         this.tagsInput.value = ''
-         this.fillSomeFields()
-         this.store.quizMetadata.tags! = [...this?.store?.quizMetadata.tags!, ...validTags]
-      }
-   }
 
    fillSomeFields() {
       this.store.quizMetadata.title = this.titleInput.value.trim() ?? ''
       this.store.quizMetadata.description = this.descriptionInput.value.trim() ?? ''
+      this.store.quizMetadata.tags = [this?.tagsInput.value]
+      // this.store.quizMetadata.image = this.customRef.value.image
+
    }
 
-   async checkSubmit() {
+   async checkSubmit(img: string) {
       try {
-         await this.checkIfFieldsAreValid()
+         await this.checkIfFieldsAreValid(img)
 
          return {
             title: this.titleInput.value.trim(),
             description: this.descriptionInput.value.trim(),
-            tags: this?.store?.quizMetadata.tags,
-            image: this?.store?.quizMetadata.image
+            tags: [this?.tagsInput.value],
+            image: img,
+            showCorrection: this.showCorrectionInput.value === 'yes'
          } as QuizTypes.QuizMetadata
 
       }
@@ -90,12 +92,12 @@ export class QuizMetadataLogic {
    }
 
 
-   async checkIfFieldsAreValid() {
+   async checkIfFieldsAreValid(img: string) {
       const titleIsValid = this.titleInput.value.trim() > ''
       const descIsValid = this.descriptionInput.value.trim() > ''
       const descIsLong = this.descriptionInput.value.trim().length > 30
-      const tagsIsValid = this?.store?.quizMetadata.tags.length > 0
-      const imgIsValid = this?.store?.quizMetadata.image > ''
+      const tagsIsValid = this.tagsInput.value.trim() > ''
+      const imgIsValid = img > ''
       const isValid = titleIsValid && descIsValid && descIsLong && tagsIsValid && imgIsValid
       let msg: string = ''
       let isErr: boolean = true
@@ -106,7 +108,7 @@ export class QuizMetadataLogic {
          else if (!descIsValid) msg = 'A description must be present'
          else if (!descIsLong) msg = 'Description must be up to 30 words'
          else if (!tagsIsValid) msg = 'tags must be added'
-         else if (!imgIsValid) msg = 'An image must be present'
+         else if (!imgIsValid) msg = 'an image must be present'
 
          throw Error(msg)
       } else {
@@ -120,14 +122,7 @@ export class QuizMetadataLogic {
    }
 
 
-   removeTag(index: number) {
-      this.store.quizMetadata.tags = this?.store?.quizMetadata.tags.filter((_, i) => index !== i)
-   }
 
-
-   removeImg() {
-      this.store.quizMetadata.image = ''
-   }
 
 
    showMsg(e: any, isErr = true) {

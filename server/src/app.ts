@@ -1,7 +1,6 @@
 import dotenv from "dotenv"
 dotenv.config({})
 
-// console.log(process.env)
 
 import express from "express"
 import { AuthLibrary } from "./classes/Auth.js"
@@ -22,7 +21,7 @@ const port = process.env.PORT ?? 5000
 const start = async () => {
    AuthClass = await generateAuthClass()
    app.listen(port, () => {
-      console.log(`🚀 server started at http://localhost:${port}`)
+      console.log(`🚀 server started at PORT: ${port}`)
    })
 }
 

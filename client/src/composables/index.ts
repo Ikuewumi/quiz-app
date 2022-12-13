@@ -68,3 +68,13 @@ export function createLoadingPromise<T>(msg: string, fn: (...args: any[]) => Pro
 
 export const sleep = async (ms = 200) => new Promise((res) => setTimeout(res, ms))
 
+export const HintTags = [
+   'medicine', 'zoology', 'botany',
+   'engineering', 'arts', 'computing',
+   'social-sciences', 'history',
+   'geography', 'other'
+]
+
+
+export const title = (str: string) => { document.title = str }
+

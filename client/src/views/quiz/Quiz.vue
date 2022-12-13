@@ -2,8 +2,10 @@
    <div data-p data-p-quiz class="sgrid even-cols">
       <Metadata v-if="booleans.metadata" :data="quizDoc" :author="authorDoc" @editQuiz="dialogM.show('draft')"
          @takeQuiz="dialogM.show('start')" />
+
       <Dialog v-if="dialogM.booleans.draft" text="Draft quiz?" @no="dialogM.hide('draft')" @yes="editQuiz"
          :showDialog="dialogM.booleans.draft" />
+
       <Modal header="Start Quiz" :showModal="dialogM.booleans.start" @closeModal="dialogM.hide('start')">
          <form data-f-start-quiz-mode-form @submit.prevent="startQuiz">
             <label for="mode">
@@ -19,14 +21,23 @@
          </form>
 
       </Modal>
+
       <QuizComponent @submitAnswers="submitFunc" :data="quizDataDoc" :startQuiz="booleans.quiz" v-if="booleans.quiz" />
-      <PostQuizComponent :data="markedQuizData" v-if="booleans.postquiz" @to-metadata="navigate('metadata')" />
+
+      <PostQuizComponent :data="markedQuizData" v-if="booleans.postquiz" @to-correction="checkCorrection"
+         @to-metadata="navigate('metadata')" />
+
+      <div class="dis-grid p-center" v-if="booleans.correction">
+         <QuizCorrectionCard @stop-preview="navigate('metadata')" :data="correctionM.current"
+            @next-question="correctionM.nav(true)" @prev-question="correctionM.nav(false)" />
+      </div>
+
    </div>
 
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, defineAsyncComponent } from 'vue';
+import { onMounted, watch, defineAsyncComponent, computed, ref } from 'vue';
 import type { QuizData } from "../../composables/quizClass"
 import { apiGet, apiPost, apiPut } from '../../composables/auth';
 import Metadata from "../../components/quiz/Metadata.vue"
@@ -34,15 +45,48 @@ import Dialog from '../../components/utitlities/Dialog.vue';
 import Modal from "../../components/utitlities/Modal.vue"
 import { useRoute, useRouter } from 'vue-router';
 import { DocumentTypes, QuizTypes, UserTypes } from 'types';
-import { createToastPromise, useToast, sleep } from '../../composables';
+import { createToastPromise, useToast, sleep, title } from '../../composables';
 import useMode from "../../pinia/mode"
+import { z } from 'zod';
+import { zClientQuiz, zClientQuizForCorrection, zClientQuizWithQuestions, zQuizMetadataExtra, zTimeMode } from '../../composables/validator';
 const QuizComponent = defineAsyncComponent(() => import('../../components/quiz/Quiz.vue'))
 const PostQuizComponent = defineAsyncComponent(() => import('../../components/quiz/PostQuiz.vue'))
+const QuizCorrectionCard = defineAsyncComponent(() => import('../../components/quiz/QuizCorrectionCard.vue'))
 
 let quizDoc = $ref(null as unknown as DocumentTypes.Quiz)
 let authorDoc = $ref(null as unknown as UserTypes.ClientUserMetadata)
 let quizDataDoc = $ref(null as unknown as QuizData)
 let markedQuizData = $ref(null as unknown as QuizTypes.MarkedQuiz)
+let correctionOptions = $ref(null as unknown as QuizTypes.Q[])
+let currentCorrection = $ref(null as unknown as QuizTypes.Q)
+
+
+const correctionM = ref({
+   state: {
+      index: -1,
+      data: [] as QuizTypes.Q[]
+   },
+
+   nav(toNext: boolean) {
+      let i = this.state.index
+      if (toNext) {
+         if ((this.state.data.length - 1) <= i) this.state.index = 0
+         else this.state.index += 1
+      } else {
+         if ((i - 1) < 0) this.state.index = this.state.data.length - 1
+         else this.state.index -= 1
+      }
+
+   },
+
+   goto(i: number) { this.state.index = i },
+
+   get current() {
+      return computed(() => this.state.data[this.state.index])
+   }
+
+})
+
 
 const modeInput = $ref('easy')
 const router = useRouter()
@@ -53,11 +97,12 @@ const qid = $computed(() => useRoute().params.id)
 const booleans = $ref({
    quiz: false,
    metadata: false,
-   postquiz: false
+   postquiz: false,
+   correction: false
 } as { [index: string]: boolean })
 
 
-const navigate = (key: "quiz" | "metadata" | "postquiz") => {
+const navigate = (key: "quiz" | "metadata" | "postquiz" | "correction") => {
 
    for (const elem in booleans) { booleans[elem] = (key === elem) }
 
@@ -88,9 +133,7 @@ const dialogM = $ref({
 const editQuiz = () => {
 
    createToastPromise(async () => {
-      console.log(qid)
       const result = await apiPut(`quiz/drafts/${qid}`, { draft: true })
-      console.log(result)
       useToast().el.show(result.message, false)
       await router.push(`/admin/drafts/${qid}`)
 
@@ -108,11 +151,10 @@ onMounted(async () => {
    // q.init().start()
 
    createToastPromise(async () => {
-      console.log(qid)
       const r = await apiGet(`quiz/metadata/${qid}?draft=false`, true)
       quizDoc = r.quizDoc as DocumentTypes.Quiz
       authorDoc = r.authorDoc as UserTypes.ClientUserMetadata
-      console.log(r)
+      title(`Quiz | ${quizDoc.title}`)
 
 
       navigate("metadata")
@@ -144,8 +186,16 @@ const startQuiz = async () => {
 
    createToastPromise(async () => {
 
-      quizDataDoc = await apiGet(`quiz/${qid}?mode=${modeInput.trim().toLowerCase()}`, true) as QuizData
-      console.log(quizDataDoc)
+      const apiQuiz = await apiGet(`quiz/${qid}?mode=${modeInput.trim().toLowerCase()}`, true)
+
+      quizDataDoc = {
+         ...zTimeMode.strip().parse(apiQuiz),
+         questionsDoc: { data: apiQuiz['questions'] },
+         quizDoc: zQuizMetadataExtra.strip().parse(apiQuiz),
+         userDoc: apiQuiz['userDoc']
+      }
+
+
 
 
       dialogM.hide('start')
@@ -159,17 +209,26 @@ const startQuiz = async () => {
 }
 
 
-
-
-
-
-
-const submitFunc = (answers: QuizTypes.ClientAnswer) => {
+const checkCorrection = async () => {
 
    createToastPromise(async () => {
-      console.log(answers)
-      markedQuizData = await apiPost(`quiz/mark/${answers.qid}`, answers) as QuizTypes.MarkedQuiz
-      console.log(markedQuizData)
+
+      correctionM.value.state.data = zClientQuizForCorrection.pick({ "questions": true }).strip().parse(await apiGet(`quiz/correction/${qid}`, true)).questions
+      correctionM.value.goto(0)
+      navigate('correction')
+
+   }, 'Loading Correction', true)()
+
+
+}
+
+
+
+
+const submitFunc = (answers: QuizTypes.Answer) => {
+
+   createToastPromise(async () => {
+      markedQuizData = await apiPost(`quiz/mark/${qid}`, answers) as QuizTypes.MarkedQuiz
       navigate("postquiz")
 
 
@@ -183,12 +242,7 @@ const submitFunc = (answers: QuizTypes.ClientAnswer) => {
 
 
 
-const submitFunction = (answers: QuizTypes.ClientAnswer) => {
-   console.log('submitting', answers)
-
-
-
-}
+const selectCorrection = (i: number) => { currentCorrection = correctionOptions[i] }
 
 
 </script>

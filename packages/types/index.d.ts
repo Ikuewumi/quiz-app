@@ -6,6 +6,10 @@ export declare namespace DocumentTypes {
     interface Token extends Types.TimeData {
         token: string;
     }
+    interface History extends Types.TimeData, HistoryTypes.History {
+    }
+    interface Tag extends Types.TimeData, TagTypes.Tag {
+    }
     interface Test extends Types.TimeData {
         name: string;
     }
@@ -158,6 +162,21 @@ export declare namespace QuizTypes {
     interface MarkedQuiz {
         scoreData: ScoreData;
         quizDoc: DocumentTypes.Quiz;
+    }
+}
+export declare namespace HistoryTypes {
+    interface History {
+        aid: string;
+        qid: string;
+        data: QuizTypes.ScoreData;
+        title: string;
+        timestamp: number;
+        uid: string;
+    }
+}
+export declare namespace TagTypes {
+    interface Tag {
+        tags: Array<string>;
     }
 }
 export declare namespace ApiTypes {

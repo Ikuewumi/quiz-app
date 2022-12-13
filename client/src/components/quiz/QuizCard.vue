@@ -7,12 +7,12 @@
          <RouterLink :to="link">
             <h3>{{ props.data.title }}</h3>
          </RouterLink>
-         <span data-tag>
+         <span data-tag class="mt-1">
             <svg viewBox="0 0 26 26">
-               <use href="#bookmark_metro"></use>
+               <use href="#hashtag_metro"></use>
             </svg>
             <span>
-               {{ props.data.bookmarks }}
+               {{ props.data.tags[0] }}
             </span>
          </span>
 
@@ -80,11 +80,10 @@ div[data-c-quiz-card] {
    grid-template-columns: var(--card-image-width) auto;
    gap: var(--p-gap, 0);
    position: relative;
+   overflow: hidden;
 
 
-   @media (max-width: 450px) {
-      --card-image-width: 80px;
-   }
+
 
 
 
@@ -116,9 +115,7 @@ div[data-c-quiz-card] {
    }
 
    [data-tag] {
-      font-family: var(--f-content, 'Work Sans');
-      font-weight: var(--weight-content, 400);
-      font-size: var(--size-content, 0.8rem);
+      @include card;
       display: grid;
       grid-auto-flow: column;
       width: fit-content;
@@ -126,7 +123,22 @@ div[data-c-quiz-card] {
       cursor: pointer;
       gap: var(--size-1);
 
-      span {}
+      --bg: #fff;
+      --bg-h: #fff;
+      --br: 0.4vmax;
+      --border-w: 0;
+      --border-w-h: 0;
+      --size: 12px;
+      --f-sans: 'Urbanist';
+      --pin: var(--size-3);
+      --pbl: 0.1rem;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      box-shadow: 0px 0 1px 1px rgb(0 0 0 / 0.08);
+
+      &:hover {
+         box-shadow: 0px 0 1px 1px rgb(0 0 0 / 0.1);
+      }
 
       svg {
          @include mSvg;
@@ -143,7 +155,13 @@ div[data-c-quiz-card] {
       border-bottom-left-radius: var(--c-br);
       object-fit: cover;
       width: var(--card-image-width);
-      height: var(--card-image-width);
+      height: var(--card-image-height, 100%);
+   }
+
+
+   @media (max-width: 450px) {
+      --card-image-width: 80px;
+      --card-image-height: 100%;
    }
 
 
