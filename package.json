@@ -13,7 +13,7 @@
       "t:s": "pnpm --filter server test",
       "t:c": "pnpm --filter client test",
       "b:p": "pnpm --filter packages build && pnpm --filter packages build:md && pnpm i:o",
-      "b": "pnpm install -r &&  turbo run build",
+      "b": "pnpm install -r --no-frozen-lockfile &&  turbo run build",
       "b:off": "pnpm install -r --offline && turbo run build"
    },
    "keywords": [
