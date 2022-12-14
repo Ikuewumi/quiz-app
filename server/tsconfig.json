@@ -16,6 +16,8 @@
    ],
    "exclude": [
       "vitest.config.*",
-      "vite.config.*"
+      "vite.config.*",
+      "test/*",
+      "test/**/*"
    ]
 }

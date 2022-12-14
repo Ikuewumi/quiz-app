@@ -13,22 +13,17 @@ export declare namespace DocumentTypes {
     interface Test extends Types.TimeData {
         name: string;
     }
-    interface Quiz extends Types.TimeData, QuizTypes.QuizMetadata {
-        aid: string;
-        questions: string;
-        answers: string;
+    interface Quiz extends Types.TimeData, QuizTypes.fullQuiz {
     }
-    interface Question extends Types.TimeData, QuizTypes.Qid {
+    interface Question extends Types.TimeData {
         data: Array<QuizTypes.Question>;
     }
-    interface Answer extends Types.TimeData, QuizTypes.Qid {
+    interface Answer extends Types.TimeData {
         data: Array<QuizTypes.Answer>;
     }
     interface Q<T> {
         qId: string;
         data: Array<T>;
-    }
-    interface Time extends Types.TimeData, QuizTypes.Time {
     }
 }
 export declare namespace UserTypes {
@@ -98,8 +93,8 @@ export declare namespace Types {
 }
 export declare namespace QuizTypes {
     interface Time {
-        timeToEnd: number;
-        mode: Mode;
+        m?: number;
+        s?: number;
     }
     interface Sid {
         sid: string;
@@ -113,6 +108,11 @@ export declare namespace QuizTypes {
         options: Array<string>;
         image?: string;
     }
+    interface Question extends Sid, Q {
+    }
+    interface Answer extends Sid {
+        answer: string;
+    }
     interface QuizMetadata {
         title: string;
         description: string;
@@ -122,38 +122,11 @@ export declare namespace QuizTypes {
         showCorrection?: boolean;
         drafted?: boolean;
     }
-    interface QMetadata extends Qid, QuizMetadata {
-    }
-    interface ClientQuestion extends Q {
-    }
-    interface Question extends Q, Sid, Qid {
-    }
-    interface Answer extends Sid, Qid {
-        answer: string;
-    }
-    interface Quiz {
-        qId: string;
-        data: Array<Question>;
-    }
-    type Mode = "easy" | "medium" | "hard";
-    interface ClientQuiz {
-        time: number;
-        mode?: Mode;
+    type Mode = 'easy' | 'medium' | 'hard';
+    interface fullQuiz extends QuizMetadata {
+        aid: string;
         questions: Question[];
-        metadata: QMetadata;
-        user: {
-            name: string;
-            email: string;
-            aid: string;
-        };
-    }
-    interface Time {
-        m: number | (number | string);
-        s: number | (number | string);
-    }
-    interface ClientAnswer {
-        qid: string;
-        data: Answer[];
+        answers: Answer[];
     }
     interface ScoreData {
         score: number;
