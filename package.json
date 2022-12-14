@@ -12,8 +12,8 @@
       "d:c": "pnpm --filter client dev",
       "t:s": "pnpm --filter server test",
       "t:c": "pnpm --filter client test",
-      "b": "pnpm build -r",
-      "b:p": "pnpm --filter packages build && pnpm --filter packages build:md && pnpm i:o"
+      "b:p": "pnpm --filter packages build && pnpm --filter packages build:md && pnpm i:o",
+      "b": "pnpm install -r &&pnpm b:p && pnpm --filter server build && pnpm --filter client build && pnpm start"
    },
    "keywords": [
       "fullstack",
