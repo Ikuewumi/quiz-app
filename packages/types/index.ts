@@ -27,8 +27,6 @@ export namespace DocumentTypes {
       qId: string
       data: Array<T>
    }
-
-   export interface Time extends Types.TimeData, QuizTypes.Time { }
 }
 
 
@@ -124,8 +122,8 @@ export namespace Types {
 export namespace QuizTypes {
 
    export interface Time {
-      timeToEnd: number
-      mode: Mode
+      m?: number
+      s?: number
    }
    interface Quiz extends fullQuiz { }
 
