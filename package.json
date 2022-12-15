@@ -6,7 +6,7 @@
    "scripts": {
       "i:o": "pnpm install --offline -r",
       "i:prod": "pnpm install -r",
-      "start": "PORT=443 node server/dist/app.js",
+      "start": "node server/dist/app.js",
       "tb:s": "cd server && pnpm build && cd .. && pnpm start",
       "d:s": "pnpm --filter server dev",
       "d:c": "pnpm --filter client dev",
