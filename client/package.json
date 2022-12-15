@@ -28,9 +28,7 @@
       "vite-plugin-pwa": "^0.13.3",
       "vue": "^3.2.37",
       "vue-router": "^4.1.5",
-      "zod": "../packages/node_modules/zod"
-   },
-   "devDependencies": {
+      "zod": "../packages/node_modules/zod",
       "@vitejs/plugin-vue": "^3.1.0",
       "@vitest/coverage-c8": "../packages/node_modules/@vitest/coverage-c8",
       "@vitest/ui": "../packages/node_modules/@vitest/ui",
@@ -42,5 +40,6 @@
       "typescript": "../packages/node_modules/typescript",
       "vite": "../packages/node_modules/vite",
       "vitest": "../packages/node_modules/vitest"
-   }
+   },
+   "devDependencies": {}
 }

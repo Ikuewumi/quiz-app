@@ -33,26 +33,10 @@
       "mongoose": "../packages/node_modules/mongoose",
       "morgan": "^1.10.0",
       "shortid": "^2.2.16",
-      "zod": "../packages/node_modules/zod"
-   },
-   "devDependencies": {
-      "@types/bcrypt": "^5.0.0",
-      "@types/cors": "^2.8.12",
-      "@types/express": "^4.17.14",
-      "@types/jsonwebtoken": "^8.5.9",
-      "@types/node": "../packages/node_modules/@types/node",
-      "@types/shortid": "^0.0.29",
-      "@vitest/coverage-c8": "../packages/node_modules/@vitest/coverage-c8",
-      "@vitest/ui": "../packages/node_modules/@vitest/ui",
+      "zod": "../packages/node_modules/zod",
       "dotenv": "^16.0.3",
       "helpers": "../packages/helpers",
-      "md": "../packages/md",
-      "nodemon": "../packages/node_modules/nodemon",
-      "ts-node": "../packages/node_modules/ts-node",
-      "tsc-watch": "../packages/node_modules/tsc-watch",
-      "types": "../packages/types",
-      "typescript": "../packages/node_modules/typescript",
-      "vite": "../packages/node_modules/vite",
-      "vitest": "../packages/node_modules/vitest"
-   }
+      "md": "../packages/md"
+   },
+   "devDependencies": {}
 }

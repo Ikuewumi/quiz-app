@@ -26,9 +26,7 @@
       "jsdom": "^20.0.1",
       "marked": "^4.1.1",
       "node-html-markdown": "^1.2.2",
-      "vitest": "../node_modules/vitest"
-   },
-   "devDependencies": {
+      "vitest": "../node_modules/vitest",
       "@types/node": "../node_modules/@types/node",
       "nodemon": "../node_modules/nodemon",
       "ts-node": "../node_modules/ts-node",
@@ -36,6 +34,7 @@
       "typescript": "../node_modules/typescript",
       "vite": "../node_modules/vite"
    },
+   "devDependencies": {},
    "author": {
       "name": "Ayobami Ikuewumi",
       "email": "ayobamsik@gmail.com"
