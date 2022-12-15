@@ -22,10 +22,13 @@
       "email": "ayobamsik@gmail.com"
    },
    "dependencies": {
-      "@types/config": "^3.3.0",
-      "@types/express": "^3.3.0",
-      "@types/shortid": "^3.3.0",
-      "@types/morgan": "^3.3.0",
+      "@types/config": "*",
+      "@types/express": "*",
+      "@types/shortid": "*",
+      "@types/morgan": "*",
+      "@types/cors": "*",
+      "@types/bcrypt": "*",
+      "@types/jsonwebtoken": "*",
       "bcrypt": "^5.1.0",
       "body-parser": "^1.20.1",
       "config": "^3.3.8",
@@ -40,6 +43,7 @@
       "zod": "../packages/node_modules/zod",
       "dotenv": "^16.0.3",
       "helpers": "../packages/helpers",
+      "types": "../packages/types",
       "md": "../packages/md"
    },
    "devDependencies": {}
