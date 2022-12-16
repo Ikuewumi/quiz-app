@@ -47,7 +47,7 @@
          <div data-f>
             <h3>Account</h3>
          </div>
-         <button data-btn-logout @click="dialogM.show('logout')">
+         <button id="logout-btn" data-btn-logout @click="dialogM.show('logout')">
             <svg viewBox="0 0 26 26">
                <use href="#shutdown_metro"></use>
             </svg>
@@ -217,7 +217,7 @@ onMounted(() => {
    }
 
 
-   [data-btn-logout] {
+   #logout-btn[data-btn-logout] {
       @include buttons;
       flex-basis: fit-content;
       width: fit-content;
