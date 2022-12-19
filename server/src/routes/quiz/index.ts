@@ -1,31 +1,52 @@
 import { Router, Response } from "express"
 import { Et } from "../../config/types.js"
 import { Ef } from "../../config/index.js"
-import { verify, verifyAdmin } from "../../middleware/auth.js"
+import { verify, verifyAdmin, verifyWithoutError } from "../../middleware/auth.js"
 import { Quiz } from "../../classes/Quiz.js"
 import { DbClass } from "../../config/db.js"
-import { QuizTypes, DocumentTypes } from "types"
-import { str } from "helpers"
+import { QuizTypes, DocumentTypes, UserTypes } from "types"
+import { z } from "zod"
 import { AuthClass } from "../../app.js"
 import { UserListClass } from "../../classes/Admin.js"
 import { FilterQuery } from "mongoose"
 
 const r = Router()
 
-r.use(verify)
+r.get('/correction/:id', async (req: Et.Req, res: Et.Res) => {
+   try {
+      let Q = Quiz.genClass()
+      const correction = await Q.getCorrection(req.params.id!)
+      Q = null as unknown as Quiz
+      return Ef.obj(res, correction, 200)
+   }
+   catch (e) {
+      return Ef.msg(res, e ?? `Something went wrong`, 502)
+   }
+})
+
+
+const zUserMetadata = z.object({
+   name: z.string().default('Anonymous'),
+   email: z.string().default('anon@anon'),
+   admin: z.boolean().default(false),
+   description: z.string().default(''),
+   image: z.string().default(''),
+   bookmarks: z.string().array().default([]),
+})
 
 
 
-//Read operation
-r.get('/:id', async (req: Et.Req, res: Et.Res) => {
+r.get('/:id', verifyWithoutError, async (req: Et.Req, res: Et.Res) => {
    try {
       const params = req.params
       const mode = (Ef.query(req, 'mode') ?? 'medium') as QuizTypes.Mode
 
       let Q = Quiz.genClass()
+      let userDoc: UserTypes.UserMetadata
 
       const result = await Q.quiz(params.id, mode)
-      const userDoc = await AuthClass.getUser(req.userDoc?.id!)
+      if (req?.userDoc?.id) { userDoc = await AuthClass.getUser(req.userDoc?.id!) }
+      else { userDoc = zUserMetadata.strip().parse({}) }
 
       Q = null as unknown as Quiz
 
@@ -39,10 +60,50 @@ r.get('/:id', async (req: Et.Req, res: Et.Res) => {
 
 
 
+r.post('/mark/:id', verifyWithoutError, async (req: Et.Req, res: Et.Res) => {
+   try {
+      let Q = Quiz.genClass()
+
+      const result = await Q.mark(req.params.id!, req.body)
+      let userDoc: UserTypes.UserMetadata
+
+      if (req?.userDoc?.id) {
+
+         let A = UserListClass.createClass()
+         const u = await AuthClass.getUser(req.userDoc?.id!)
+         await A.saveHistory({
+            "data": result.scoreData,
+            "title": result.quizDoc.title,
+            "aid": result.quizDoc.aid,
+            "qid": result.quizDoc?._id!,
+            "uid": req?.userDoc?.id!
+         })
+         A = null as unknown as UserListClass
+
+      }
 
 
 
-r.get('/metadata/:id', async (req: Et.Req, res: Et.Res) => {
+      Q = null as unknown as Quiz
+
+
+
+      return Ef.obj(res, result, 200)
+
+
+   }
+   catch (e) { return Ef.msg(res, e ?? `Something went wrong`, 502) }
+
+
+
+})
+
+
+
+
+
+
+r.get('/metadata/:id', verifyWithoutError, async (req: Et.Req, res: Et.Res) => {
    try {
       let Q = Quiz.genClass()
       let isDrafted = (Ef.query(req, 'draft').toLowerCase() === 'true')
@@ -74,17 +135,24 @@ r.get('/metadata/:id', async (req: Et.Req, res: Et.Res) => {
 
 
 
-r.get('/correction/:id', async (req: Et.Req, res: Et.Res) => {
-   try {
-      let Q = Quiz.genClass()
-      const correction = await Q.getCorrection(req.params.id!)
-      Q = null as unknown as Quiz
-      return Ef.obj(res, correction, 200)
-   }
-   catch (e) {
-      return Ef.msg(res, e ?? `Something went wrong`, 502)
-   }
-})
+
+r.use(verify)
+
+
+
+//Read operation
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -148,35 +216,7 @@ r.post('/create', verifyAdmin, async (req: Et.Req, res: Et.Res) => {
 
 
 
-r.post('/mark/:id', async (req: Et.Req, res: Et.Res) => {
-   try {
-      let Q = Quiz.genClass()
-      let A = UserListClass.createClass()
 
-      const result = await Q.mark(req.params.id!, req.body)
-      await A.saveHistory({
-         "data": result.scoreData,
-         "title": result.quizDoc.title,
-         "aid": result.quizDoc.aid,
-         "qid": result.quizDoc?._id!,
-         "uid": req?.userDoc?.id!
-      })
-
-
-      Q = null as unknown as Quiz
-      A = null as unknown as UserListClass
-
-
-
-      return Ef.obj(res, result, 200)
-
-
-   }
-   catch (e) { return Ef.msg(res, e ?? `Something went wrong`, 502) }
-
-
-
-})
 
 
 

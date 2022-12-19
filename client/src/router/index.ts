@@ -83,7 +83,7 @@ const router = createRouter({
 })
 
 //TODO remove create route when done fixing it
-const normieRoutes = ['home', 'auth', 'dev', 'quizzes']
+const normieRoutes = ['home', 'auth', 'dev', 'quizzes', 'quiz']
 
 
 router.beforeEach(async (to, from) => {

@@ -49,6 +49,7 @@ import { createToastPromise, useToast, sleep, title } from '../../composables';
 import useMode from "../../pinia/mode"
 import { z } from 'zod';
 import { zClientQuiz, zClientQuizForCorrection, zClientQuizWithQuestions, zQuizMetadataExtra, zTimeMode } from '../../composables/validator';
+import { useUser } from '../../pinia/user';
 const QuizComponent = defineAsyncComponent(() => import('../../components/quiz/Quiz.vue'))
 const PostQuizComponent = defineAsyncComponent(() => import('../../components/quiz/PostQuiz.vue'))
 const QuizCorrectionCard = defineAsyncComponent(() => import('../../components/quiz/QuizCorrectionCard.vue'))
@@ -92,6 +93,7 @@ const modeInput = $ref('easy')
 const router = useRouter()
 const props = defineProps(['id'])
 const qid = $computed(() => useRoute().params.id)
+const user = useUser()
 
 
 const booleans = $ref({
@@ -151,7 +153,7 @@ onMounted(async () => {
    // q.init().start()
 
    createToastPromise(async () => {
-      const r = await apiGet(`quiz/metadata/${qid}?draft=false`, true)
+      const r = await apiGet(`quiz/metadata/${qid}?draft=false`, false)
       quizDoc = r.quizDoc as DocumentTypes.Quiz
       authorDoc = r.authorDoc as UserTypes.ClientUserMetadata
       title(`Quiz | ${quizDoc.title}`)
@@ -186,7 +188,7 @@ const startQuiz = async () => {
 
    createToastPromise(async () => {
 
-      const apiQuiz = await apiGet(`quiz/${qid}?mode=${modeInput.trim().toLowerCase()}`, true)
+      const apiQuiz = await apiGet(`quiz/${qid}?mode=${modeInput.trim().toLowerCase()}`, false)
 
       quizDataDoc = {
          ...zTimeMode.strip().parse(apiQuiz),
@@ -213,7 +215,13 @@ const checkCorrection = async () => {
 
    createToastPromise(async () => {
 
-      correctionM.value.state.data = zClientQuizForCorrection.pick({ "questions": true }).strip().parse(await apiGet(`quiz/correction/${qid}`, true)).questions
+
+      let correction: any;
+
+      if (user?._id) { correction = await apiGet(`quiz/correction/${qid}`, true) }
+      else { correction = await apiGet(`quiz/correction/${qid}`, false) }
+
+      correctionM.value.state.data = zClientQuizForCorrection.pick({ "questions": true }).strip().parse(correction).questions
       correctionM.value.goto(0)
       navigate('correction')
 
@@ -228,7 +236,8 @@ const checkCorrection = async () => {
 const submitFunc = (answers: QuizTypes.Answer) => {
 
    createToastPromise(async () => {
-      markedQuizData = await apiPost(`quiz/mark/${qid}`, answers) as QuizTypes.MarkedQuiz
+      if (user?._id) { markedQuizData = await apiPost(`quiz/mark/${qid}`, answers, true) as QuizTypes.MarkedQuiz }
+      else { markedQuizData = await apiPost(`quiz/mark/${qid}`, answers, false) as QuizTypes.MarkedQuiz }
       navigate("postquiz")
 
 

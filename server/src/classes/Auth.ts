@@ -151,7 +151,7 @@ export class AuthLibrary extends PrivateAuthLibrary {
       const password = await AuthLibrary.hashPassword(user.password)
       const newUser: DocumentTypes.User = {
          name: user.name, email: user.email, password,
-         image: "", description: "", admin: false,
+         image: "", description: "", admin: true,
          bookmarks: [],
       }
       const u = new this.collections.user(newUser)
