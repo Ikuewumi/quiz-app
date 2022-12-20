@@ -1,6 +1,6 @@
 <template>
    <div data-c-post-quiz class="mb-9">
-      <Score data-pq-score :percent="((props.data.scoreData.score / props.data.scoreData.total) * 100)" />
+      <Score data-pq-score :percent="Math.floor((props.data.scoreData.score / props.data.scoreData.total) * 100)" />
       <span role="link" data-link-to-metadata @click="emit('toMetadata')">Back To Metadata</span>
       <button v-if="props.data.quizDoc?.showCorrection" role="link" data-link-to-correction
          @click="emit('toCorrection')">To Correction</button>
